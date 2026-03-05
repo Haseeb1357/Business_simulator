@@ -1,0 +1,53 @@
+Error: Prisma schema validation - (get-dmmf wasm)
+Error code: P1012
+[1;91merror[0m: [1mError validating field `prices` in model `Decision`: Field `prices` in model `Decision` can't be of type Json. The current connector does not support the Json type.[0m
+  [1;94m-->[0m  [4mprisma\schema.prisma:47[0m
+[1;94m   | [0m
+[1;94m46 | [0m  // Marketing (JSON for products/regions to simplify schema)
+[1;94m47 | [0m  [1;91mprices            Json     // { p1: { home: 150, export: 170 }, ... }[0m
+[1;94m48 | [0m  advertising       Json     // { p1: { trade: 10, press_tv: 12 }, ... }
+[1;94m   | [0m
+[1;91merror[0m: [1mError validating field `advertising` in model `Decision`: Field `advertising` in model `Decision` can't be of type Json. The current connector does not support the Json type.[0m
+  [1;94m-->[0m  [4mprisma\schema.prisma:48[0m
+[1;94m   | [0m
+[1;94m47 | [0m  prices            Json     // { p1: { home: 150, export: 170 }, ... }
+[1;94m48 | [0m  [1;91madvertising       Json     // { p1: { trade: 10, press_tv: 12 }, ... }[0m
+[1;94m49 | [0m  
+[1;94m   | [0m
+[1;91merror[0m: [1mError validating field `profit_and_loss` in model `FinancialSnapshot`: Field `profit_and_loss` in model `FinancialSnapshot` can't be of type Json. The current connector does not support the Json type.[0m
+  [1;94m-->[0m  [4mprisma\schema.prisma:77[0m
+[1;94m   | [0m
+[1;94m76 | [0m  // Financial Data stored as JSON
+[1;94m77 | [0m  [1;91mprofit_and_loss Json[0m
+[1;94m78 | [0m  balance_sheet   Json
+[1;94m   | [0m
+[1;91merror[0m: [1mError validating field `balance_sheet` in model `FinancialSnapshot`: Field `balance_sheet` in model `FinancialSnapshot` can't be of type Json. The current connector does not support the Json type.[0m
+  [1;94m-->[0m  [4mprisma\schema.prisma:78[0m
+[1;94m   | [0m
+[1;94m77 | [0m  profit_and_loss Json
+[1;94m78 | [0m  [1;91mbalance_sheet   Json[0m
+[1;94m79 | [0m  cash_flow       Json
+[1;94m   | [0m
+[1;91merror[0m: [1mError validating field `cash_flow` in model `FinancialSnapshot`: Field `cash_flow` in model `FinancialSnapshot` can't be of type Json. The current connector does not support the Json type.[0m
+  [1;94m-->[0m  [4mprisma\schema.prisma:79[0m
+[1;94m   | [0m
+[1;94m78 | [0m  balance_sheet   Json
+[1;94m79 | [0m  [1;91mcash_flow       Json[0m
+[1;94m80 | [0m  operations      Json     // Market share, inventory, production stats
+[1;94m   | [0m
+[1;91merror[0m: [1mError validating field `operations` in model `FinancialSnapshot`: Field `operations` in model `FinancialSnapshot` can't be of type Json. The current connector does not support the Json type.[0m
+  [1;94m-->[0m  [4mprisma\schema.prisma:80[0m
+[1;94m   | [0m
+[1;94m79 | [0m  cash_flow       Json
+[1;94m80 | [0m  [1;91moperations      Json     // Market share, inventory, production stats[0m
+[1;94m81 | [0m  
+[1;94m   | [0m
+
+Validation Error Count: 6
+[Context: getDmmf]
+
+Prisma CLI Version : 5.22.0
+
+---STDOUT---
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma

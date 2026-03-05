@@ -1,0 +1,151 @@
+import { useState, useEffect } from 'react';
+import Sidebar from '../components/Sidebar';
+import { useSimulationStore } from '../store/simulationStore';
+import { Play, RefreshCw, RotateCcw, CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
+
+const AdminControl = () => {
+    const { currentQuarter, gameStatus, teams, submittedTeams, processQuarter, resetGame, processingLog, gameConfig, updateGameConfig } = useSimulationStore();
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [logLines, setLogLines] = useState<string[]>([]);
+
+    useEffect(() => { setLogLines(processingLog); }, [processingLog]);
+
+    const handleRunSimulation = () => {
+        setIsProcessing(true);
+        setLogLines(['> Initializing simulation engine...']);
+
+        setTimeout(() => {
+            processQuarter();
+            setIsProcessing(false);
+        }, 1500);
+    };
+
+    const handleReset = () => {
+        if (confirm('Reset the entire simulation? All results will be lost.')) {
+            resetGame();
+            setLogLines(['> Game reset to Quarter 1.']);
+        }
+    };
+
+    return (
+        <div className="flex h-screen overflow-hidden">
+            <Sidebar />
+            <div className="flex-1 flex flex-col overflow-y-auto pt-16 lg:pt-0 lg:pl-72 bg-slate-50">
+                <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
+                    <div className="flex justify-between items-center mb-6">
+                        <div>
+                            <h1 className="text-2xl font-bold text-slate-800">Simulation Control Panel</h1>
+                            <p className="text-slate-500">Instructor Dashboard — Quarter {currentQuarter}</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 bg-white border border-slate-300 px-3 py-1.5 rounded-md shadow-sm">
+                                <span className="relative flex h-3 w-3">
+                                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isProcessing ? 'bg-blue-400' : 'bg-emerald-400'}`}></span>
+                                    <span className={`relative inline-flex rounded-full h-3 w-3 ${isProcessing ? 'bg-blue-500' : 'bg-emerald-500'}`}></span>
+                                </span>
+                                <span className="text-sm font-medium text-slate-700">{isProcessing ? 'Processing...' : 'Ready'}</span>
+                            </div>
+                            <button onClick={handleReset} className="text-sm text-red-600 hover:text-red-800 flex items-center gap-1">
+                                <RotateCcw className="h-4 w-4" /> Reset Game
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        {/* Quarter Execution */}
+                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 col-span-2">
+                            <h2 className="text-lg font-bold text-slate-800 mb-4">Quarter Execution</h2>
+                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200 mb-6">
+                                <div>
+                                    <h3 className="font-semibold text-slate-900 text-lg">Process Quarter {currentQuarter}</h3>
+                                    <p className="text-sm text-slate-500">{submittedTeams.size}/{teams.length} teams submitted decisions</p>
+                                </div>
+                                <button onClick={handleRunSimulation} disabled={isProcessing}
+                                    className="flex items-center gap-2 bg-primary-600 hover:bg-primary-500 text-white px-6 py-3 rounded-lg font-bold shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                                    {isProcessing ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5" />}
+                                    {isProcessing ? 'Running...' : 'Execute Simulation'}
+                                </button>
+                            </div>
+
+                            <h3 className="font-medium text-slate-700 mb-3">Team Decision Status</h3>
+                            <div className="w-full border border-slate-200 rounded-lg overflow-hidden">
+                                <table className="min-w-full divide-y divide-slate-200">
+                                    <thead className="bg-slate-50">
+                                        <tr>
+                                            <th className="px-4 py-2.5 text-left text-xs font-medium text-slate-500 uppercase">Team</th>
+                                            <th className="px-4 py-2.5 text-left text-xs font-medium text-slate-500 uppercase">Company</th>
+                                            <th className="px-4 py-2.5 text-left text-xs font-medium text-slate-500 uppercase">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-200">
+                                        {teams.map(t => (
+                                            <tr key={t.id} className="hover:bg-slate-50">
+                                                <td className="px-4 py-2.5 text-sm font-medium text-slate-900">{t.name}</td>
+                                                <td className="px-4 py-2.5 text-sm text-slate-500">Company {t.companyNumber}</td>
+                                                <td className="px-4 py-2.5 text-sm">
+                                                    {submittedTeams.has(t.id) ? (
+                                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700">
+                                                            <CheckCircle2 className="h-3.5 w-3.5" /> Submitted
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
+                                                            <Clock className="h-3.5 w-3.5" /> Pending
+                                                        </span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Market Intervention */}
+                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                            <h2 className="text-lg font-bold text-slate-800 mb-4">Market Intervention</h2>
+                            <p className="text-sm text-slate-500 mb-4">Adjust economic variables for the next run.</p>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">GDP Growth (%)</label>
+                                    <input type="number" value={gameConfig.gdpGrowth} step={0.1}
+                                        onChange={e => updateGameConfig({ gdpGrowth: Number(e.target.value) })}
+                                        className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Interest Rate (%)</label>
+                                    <input type="number" value={gameConfig.interestRate} step={0.25}
+                                        onChange={e => updateGameConfig({ interestRate: Number(e.target.value) })}
+                                        className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Inflation Rate (%)</label>
+                                    <input type="number" value={gameConfig.inflationRate} step={0.1}
+                                        onChange={e => updateGameConfig({ inflationRate: Number(e.target.value) })}
+                                        className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Material Price (£ per 1000)</label>
+                                    <input type="number" value={gameConfig.materialPrice}
+                                        onChange={e => updateGameConfig({ materialPrice: Number(e.target.value) })}
+                                        className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Terminal Log */}
+                    <div className="bg-slate-900 rounded-xl p-4 font-mono text-sm text-emerald-400 h-52 overflow-y-auto shadow-inner">
+                        {logLines.length === 0 && <p className="text-slate-600">{'>'} Waiting for simulation command...</p>}
+                        {logLines.map((line, i) => (
+                            <p key={i} className={line.includes('COMPLETE') ? 'text-emerald-300 font-bold' : line.includes('Error') ? 'text-red-400' : ''}>
+                                {line}
+                            </p>
+                        ))}
+                    </div>
+                </main>
+            </div>
+        </div>
+    );
+};
+
+export default AdminControl;
