@@ -38,7 +38,7 @@ const MarketIntelligence = () => {
                                 <tbody className="divide-y divide-slate-200">
                                     {/* Share Price */}
                                     <tr className="bg-slate-50/50">
-                                        <td className="px-4 py-2 font-medium text-slate-700 sticky left-0 bg-slate-50/50 z-10">Share Price (pence)</td>
+                                        <td className="px-4 py-2 font-medium text-slate-700 sticky left-0 bg-slate-50/50 z-10">Share Price (cents)</td>
                                         {teams.map(t => {
                                             const d = getTeamData(t.id);
                                             return <td key={t.id} className="px-3 py-2 text-center tabular-nums">{d.latest?.kpis.sharePrice || 116.0}</td>;
@@ -46,12 +46,12 @@ const MarketIntelligence = () => {
                                     </tr>
                                     {/* Net Profit */}
                                     <tr>
-                                        <td className="px-4 py-2 font-medium text-slate-700 sticky left-0 bg-white z-10">Net Profit (£)</td>
+                                        <td className="px-4 py-2 font-medium text-slate-700 sticky left-0 bg-white z-10">Net Profit ($)</td>
                                         {teams.map(t => {
                                             const d = getTeamData(t.id);
                                             const np = d.latest?.kpis.netProfit || 0;
                                             return <td key={t.id} className={`px-3 py-2 text-center tabular-nums ${np < 0 ? 'text-red-600' : ''}`}>
-                                                {latestQ > 0 ? (np >= 0 ? `£${(np / 1000).toFixed(0)}k` : `-£${(Math.abs(np) / 1000).toFixed(0)}k`) : '—'}
+                                                {latestQ > 0 ? (np >= 0 ? `$${(np / 1000).toFixed(0)}k` : `-$${(Math.abs(np) / 1000).toFixed(0)}k`) : '—'}
                                             </td>;
                                         })}
                                     </tr>
@@ -75,14 +75,14 @@ const MarketIntelligence = () => {
                                     {(['p1', 'p2', 'p3'] as const).map((pk, pi) => (
                                         <>
                                             <tr key={`${pk}-home`} className="bg-slate-50/50">
-                                                <td className="px-4 py-2 font-medium text-slate-700 sticky left-0 bg-slate-50/50 z-10">Product {pi + 1}: Home Price (£)</td>
+                                                <td className="px-4 py-2 font-medium text-slate-700 sticky left-0 bg-slate-50/50 z-10">Product {pi + 1}: Home Price ($)</td>
                                                 {teams.map(t => {
                                                     const d = getTeamData(t.id);
                                                     return <td key={t.id} className="px-3 py-2 text-center tabular-nums">{d.dec?.prices[pk].home || '—'}</td>;
                                                 })}
                                             </tr>
                                             <tr key={`${pk}-export`}>
-                                                <td className="px-4 py-2 font-medium text-slate-700 pl-8 sticky left-0 bg-white z-10">Export Price (£)</td>
+                                                <td className="px-4 py-2 font-medium text-slate-700 pl-8 sticky left-0 bg-white z-10">Export Price ($)</td>
                                                 {teams.map(t => {
                                                     const d = getTeamData(t.id);
                                                     return <td key={t.id} className="px-3 py-2 text-center tabular-nums">{d.dec?.prices[pk].export || '—'}</td>;
@@ -112,8 +112,8 @@ const MarketIntelligence = () => {
                                 <span className="font-bold text-slate-900">{gameConfig.interestRate}%</span>
                             </div>
                             <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
-                                <span className="text-slate-600">Material Price (£ per '000)</span>
-                                <span className="font-bold text-slate-900">£{gameConfig.materialPrice.toLocaleString()}</span>
+                                <span className="text-slate-600">Material Price ($ per '000)</span>
+                                <span className="font-bold text-slate-900">${gameConfig.materialPrice.toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
                                 <span className="text-slate-600">Inflation Rate</span>

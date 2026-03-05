@@ -66,7 +66,7 @@ const Dashboard = () => {
         return data;
     }, [allResults, teams, latestQ]);
 
-    const fmt = (n: number) => n >= 0 ? `£${n.toLocaleString()}` : `-£${Math.abs(n).toLocaleString()}`;
+    const fmt = (n: number) => n >= 0 ? `$${n.toLocaleString()}` : `-$${Math.abs(n).toLocaleString()}`;
 
     return (
         <div className="flex h-screen overflow-hidden">
@@ -107,7 +107,7 @@ const Dashboard = () => {
                         </div>
                         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
                             <h3 className="text-xs text-slate-500 uppercase tracking-wider font-medium">Share Price</h3>
-                            <p className="text-2xl font-bold mt-1 text-primary-600">{latest ? `${latest.kpis.sharePrice}p` : '116.0p'}</p>
+                            <p className="text-2xl font-bold mt-1 text-primary-600">{latest ? `${latest.kpis.sharePrice}¢` : '116.0¢'}</p>
                         </div>
                         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
                             <h3 className="text-xs text-slate-500 uppercase tracking-wider font-medium">Market Share</h3>
@@ -131,8 +131,8 @@ const Dashboard = () => {
                                         <LineChart data={revenueTrend}>
                                             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                                             <XAxis dataKey="quarter" tick={{ fontSize: 12 }} />
-                                            <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`} />
-                                            <Tooltip formatter={(v: number) => `£${v.toLocaleString()}`} />
+                                            <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                                            <Tooltip formatter={(v: number) => `$${v.toLocaleString()}`} />
                                             <Legend />
                                             <Line type="monotone" dataKey="Revenue" stroke="#2563eb" strokeWidth={2} dot={{ r: 4 }} />
                                             <Line type="monotone" dataKey="Net Profit" stroke="#059669" strokeWidth={2} dot={{ r: 4 }} />

@@ -23,7 +23,7 @@ const TeamManagement = () => {
 
     teamsData.forEach((t, i) => t.rank = i + 1);
 
-    const fmt = (n: number) => n >= 0 ? `£${n.toLocaleString()}` : `-£${Math.abs(n).toLocaleString()}`;
+    const fmt = (n: number) => n >= 0 ? `$${n.toLocaleString()}` : `-$${Math.abs(n).toLocaleString()}`;
 
     return (
         <div className="flex h-screen overflow-hidden">
@@ -67,7 +67,7 @@ const TeamManagement = () => {
                                         <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${team.profit < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
                                             {latestQ > 0 ? fmt(team.profit) : '—'}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-primary-600">{team.sharePrice}p</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-primary-600">{team.sharePrice}¢</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                                             <button onClick={() => setActiveTeam(team.id)}
                                                 className={`font-medium mr-3 ${team.id === activeTeamId ? 'text-emerald-600' : 'text-primary-600 hover:text-primary-900'}`}>

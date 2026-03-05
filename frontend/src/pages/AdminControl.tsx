@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import { useSimulationStore } from '../store/simulationStore';
-import { Play, RefreshCw, RotateCcw, CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
+import { Play, RefreshCw, RotateCcw, CheckCircle2, AlertTriangle, Clock, X } from 'lucide-react';
 
 const AdminControl = () => {
     const { currentQuarter, gameStatus, teams, submittedTeams, processQuarter, resetGame, processingLog, gameConfig, updateGameConfig } = useSimulationStore();
     const [isProcessing, setIsProcessing] = useState(false);
     const [logLines, setLogLines] = useState<string[]>([]);
+    const [showResetModal, setShowResetModal] = useState(false);
 
     useEffect(() => { setLogLines(processingLog); }, [processingLog]);
 
@@ -20,11 +21,15 @@ const AdminControl = () => {
         }, 1500);
     };
 
-    const handleReset = () => {
-        if (confirm('Reset the entire simulation? All results will be lost.')) {
-            resetGame();
-            setLogLines(['> Game reset to Quarter 1.']);
-        }
+    const handleResetClick = () => {
+        setShowResetModal(true);
+    };
+
+    const handleResetConfirm = () => {
+        resetGame();
+        setIsProcessing(false);
+        setLogLines(['> Game reset to Quarter 1.']);
+        setShowResetModal(false);
     };
 
     return (
@@ -45,7 +50,7 @@ const AdminControl = () => {
                                 </span>
                                 <span className="text-sm font-medium text-slate-700">{isProcessing ? 'Processing...' : 'Ready'}</span>
                             </div>
-                            <button onClick={handleReset} className="text-sm text-red-600 hover:text-red-800 flex items-center gap-1">
+                            <button onClick={handleResetClick} className="text-sm text-red-600 hover:text-red-800 flex items-center gap-1">
                                 <RotateCcw className="h-4 w-4" /> Reset Game
                             </button>
                         </div>
@@ -124,7 +129,7 @@ const AdminControl = () => {
                                         className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Material Price (£ per 1000)</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Material Price ($ per 1000)</label>
                                     <input type="number" value={gameConfig.materialPrice}
                                         onChange={e => updateGameConfig({ materialPrice: Number(e.target.value) })}
                                         className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm" />
@@ -144,6 +149,56 @@ const AdminControl = () => {
                     </div>
                 </main>
             </div>
+
+            {/* Reset Confirmation Modal */}
+            {showResetModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    {/* Backdrop */}
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowResetModal(false)} />
+
+                    {/* Modal */}
+                    <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in">
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-6 pt-6 pb-2">
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-100">
+                                    <AlertTriangle className="h-5 w-5 text-red-600" />
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-900">Reset Simulation</h3>
+                            </div>
+                            <button onClick={() => setShowResetModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="px-6 py-4">
+                            <p className="text-slate-600 text-sm leading-relaxed">
+                                This will <strong className="text-red-600">permanently reset</strong> the entire simulation back to <strong>Quarter 1</strong>. All team results, financial data, and submitted decisions will be lost.
+                            </p>
+                            <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                <p className="text-xs text-amber-800 font-medium">⚠ This action cannot be undone.</p>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex items-center justify-end gap-3 px-6 py-4 bg-slate-50 border-t border-slate-200">
+                            <button
+                                onClick={() => setShowResetModal(false)}
+                                className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleResetConfirm}
+                                className="px-4 py-2 text-sm font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                            >
+                                Yes, Reset Game
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

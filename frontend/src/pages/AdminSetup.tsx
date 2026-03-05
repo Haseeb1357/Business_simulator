@@ -45,7 +45,7 @@ const AdminSetup = () => {
                                                 </div>
                                                 <div className="space-y-3">
                                                     <div>
-                                                        <label className="text-xs text-slate-500 block mb-1">Base Material Cost (£)</label>
+                                                        <label className="text-xs text-slate-500 block mb-1">Base Material Cost ($)</label>
                                                         <input type="number" defaultValue={p.cost} className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm" />
                                                     </div>
                                                     <div>
@@ -94,7 +94,7 @@ const AdminSetup = () => {
                                                 className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm" />
                                         </div>
                                         <div>
-                                            <label className="text-sm font-medium text-slate-700 block mb-2">Raw Material Price (£ per 1000)</label>
+                                            <label className="text-sm font-medium text-slate-700 block mb-2">Raw Material Price ($ per 1000)</label>
                                             <input type="number" value={gameConfig.materialPrice}
                                                 onChange={e => updateGameConfig({ materialPrice: Number(e.target.value) })}
                                                 className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm" />

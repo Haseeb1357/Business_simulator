@@ -23,7 +23,7 @@ const Reports = () => {
     const fmt = (n: number) => {
         if (n === 0) return '—';
         const abs = Math.abs(Math.round(n));
-        return `${n < 0 ? '(' : ''}£${abs.toLocaleString()}${n < 0 ? ')' : ''}`;
+        return `${n < 0 ? '(' : ''}$${abs.toLocaleString()}${n < 0 ? ')' : ''}`;
     };
 
     const row = (label: string, value: number, bold = false, indent = false, highlight = false) => (

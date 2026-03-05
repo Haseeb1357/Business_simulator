@@ -1,5 +1,5 @@
 // ============================================================
-// TOPAZ-SYNC SIMULATION ENGINE
+// CUI SIMULATION ENGINE
 // Multi-product demand, production, and financial model
 // ============================================================
 
@@ -22,7 +22,7 @@ export interface TeamDecision {
     rawMaterialOrder: number;       // thousands of units
     shiftLevel: number;             // 1 = normal, 2 = overtime, 3 = double
     maintenanceHours: number;       // quarterly
-    machinePurchase: number;        // number of new machines (£100k each)
+    machinePurchase: number;        // number of new machines ($100k each)
     recruitWorkers: number;
     dismissWorkers: number;
     trainWorkers: number;

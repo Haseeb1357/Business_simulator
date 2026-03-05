@@ -145,9 +145,9 @@ app.get('/api/leaderboard/:gameId', async (req: Request, res: Response) => {
 
 // Health check
 app.get('/health', (_req: Request, res: Response) => {
-    res.json({ status: 'ok', service: 'topaz-sync-sim-engine' });
+    res.json({ status: 'ok', service: 'cui-simulation-engine' });
 });
 
 app.listen(port, () => {
-    console.log(`Topaz-Sync backend listening on port ${port}`);
+    console.log(`CUI Simulation backend listening on port ${port}`);
 });

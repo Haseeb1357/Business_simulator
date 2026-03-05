@@ -162,7 +162,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
 
         for (const [tid, result] of results) {
             const team = state.teams.find(t => t.id === tid);
-            log.push(`> ${team?.name}: Revenue £${result.kpis.totalRevenue.toLocaleString()}, Net Profit £${result.kpis.netProfit.toLocaleString()}`);
+            log.push(`> ${team?.name}: Revenue $${result.kpis.totalRevenue.toLocaleString()}, Net Profit $${result.kpis.netProfit.toLocaleString()}`);
         }
 
         log.push(`> Quarter ${state.currentQuarter} processing COMPLETE.`);

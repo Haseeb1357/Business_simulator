@@ -62,7 +62,7 @@ const Leaderboard = () => {
         return <Minus className="h-4 w-4 text-slate-400" />;
     };
 
-    const fmt = (n: number) => n >= 0 ? `£${Math.abs(n).toLocaleString()}` : `-£${Math.abs(n).toLocaleString()}`;
+    const fmt = (n: number) => n >= 0 ? `$${Math.abs(n).toLocaleString()}` : `-$${Math.abs(n).toLocaleString()}`;
 
     return (
         <div className="flex h-screen overflow-hidden">
@@ -128,13 +128,13 @@ const Leaderboard = () => {
                                                         <span className="font-semibold text-slate-900">{r.name}</span>
                                                         {r.id === activeTeamId && <span className="ml-2 text-xs text-primary-600 font-medium">(You)</span>}
                                                     </td>
-                                                    <td className="px-4 py-3 text-right tabular-nums font-medium">£{(r.companyValue / 1000000).toFixed(2)}M</td>
+                                                    <td className="px-4 py-3 text-right tabular-nums font-medium">${(r.companyValue / 1000000).toFixed(2)}M</td>
                                                     <td className="px-4 py-3 text-right tabular-nums">{fmt(r.totalRevenue)}</td>
                                                     <td className={`px-4 py-3 text-right tabular-nums font-medium ${r.netProfit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                                                         {fmt(r.netProfit)}
                                                     </td>
                                                     <td className="px-4 py-3 text-right tabular-nums">{r.marketShare.toFixed(1)}%</td>
-                                                    <td className="px-4 py-3 text-right tabular-nums font-bold text-primary-600">{r.sharePrice}p</td>
+                                                    <td className="px-4 py-3 text-right tabular-nums font-bold text-primary-600">{r.sharePrice}¢</td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -160,13 +160,13 @@ const Leaderboard = () => {
                                         </ResponsiveContainer>
                                     </div>
                                     <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                                        <h3 className="text-sm font-semibold text-slate-800 mb-4">Company Value (£'000)</h3>
+                                        <h3 className="text-sm font-semibold text-slate-800 mb-4">Company Value ($'000)</h3>
                                         <ResponsiveContainer width="100%" height={300}>
                                             <BarChart data={companyValueData}>
                                                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                                                 <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                                                <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `£${v}k`} />
-                                                <Tooltip formatter={(v: number) => `£${v}k`} />
+                                                <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `$${v}k`} />
+                                                <Tooltip formatter={(v: number) => `$${v}k`} />
                                                 <Bar dataKey="value" fill="#2563eb" radius={[4, 4, 0, 0]} />
                                             </BarChart>
                                         </ResponsiveContainer>

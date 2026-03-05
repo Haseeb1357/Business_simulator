@@ -110,14 +110,14 @@ const DecisionForm = () => {
                             {activeTab === 'marketing' && (
                                 <div className="space-y-8">
                                     <div>
-                                        <h3 className="text-lg font-semibold text-slate-900 border-b pb-2 mb-4">Pricing Strategy (£)</h3>
+                                        <h3 className="text-lg font-semibold text-slate-900 border-b pb-2 mb-4">Pricing Strategy ($)</h3>
                                         <div className="overflow-x-auto">
                                             <table className="min-w-full text-sm">
                                                 <thead>
                                                     <tr className="border-b border-slate-200">
                                                         <th className="text-left py-2 pr-4 font-medium text-slate-600">Product</th>
-                                                        <th className="text-left py-2 px-4 font-medium text-slate-600">Home Price (£)</th>
-                                                        <th className="text-left py-2 px-4 font-medium text-slate-600">Export Price (£)</th>
+                                                        <th className="text-left py-2 px-4 font-medium text-slate-600">Home Price ($)</th>
+                                                        <th className="text-left py-2 px-4 font-medium text-slate-600">Export Price ($)</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -140,7 +140,7 @@ const DecisionForm = () => {
                                     </div>
 
                                     <div>
-                                        <h3 className="text-lg font-semibold text-slate-900 border-b pb-2 mb-4">Advertising Expenditure (£'000)</h3>
+                                        <h3 className="text-lg font-semibold text-slate-900 border-b pb-2 mb-4">Advertising Expenditure ($'000)</h3>
                                         <div className="overflow-x-auto">
                                             <table className="min-w-full text-sm">
                                                 <thead>
@@ -195,7 +195,7 @@ const DecisionForm = () => {
                                         {numInput('Purchase New Machines', dec.machinePurchase, v => setDec(p => ({ ...p, machinePurchase: v })), 0, 10)}
                                     </div>
                                     <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
-                                        <strong>Tip:</strong> Higher maintenance hours reduce product rejection rates. Overtime shifts increase capacity but cost 50% more. Each new machine costs £100,000 and adds 1,200 hours of capacity.
+                                        <strong>Tip:</strong> Higher maintenance hours reduce product rejection rates. Overtime shifts increase capacity but cost 50% more. Each new machine costs $100,000 and adds 1,200 hours of capacity.
                                     </div>
                                 </div>
                             )}
@@ -210,7 +210,7 @@ const DecisionForm = () => {
                                         {numInput('Train Workers', dec.trainWorkers, v => setDec(p => ({ ...p, trainWorkers: v })), 0, 20)}
                                     </div>
                                     <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-                                        <strong>Costs:</strong> Recruitment costs £800/worker. Dismissal costs £1,200/worker. Training costs £500/worker but increases productivity by up to 15%.
+                                        <strong>Costs:</strong> Recruitment costs $800/worker. Dismissal costs $1,200/worker. Training costs $500/worker but increases productivity by up to 15%.
                                     </div>
                                 </div>
                             )}
@@ -220,10 +220,10 @@ const DecisionForm = () => {
                                 <div className="space-y-8">
                                     <h3 className="text-lg font-semibold text-slate-900 border-b pb-2">Finance & R&D</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {numInput('Dividend (pence per share)', dec.dividendPence, v => setDec(p => ({ ...p, dividendPence: v })), 0, 20, 'p')}
-                                        {numInput('Management Budget (£\'000)', dec.managementBudgetK, v => setDec(p => ({ ...p, managementBudgetK: v })), 50, 300, '×1000')}
-                                        {numInput('Loan Request (£\'000)', dec.loanRequest, v => setDec(p => ({ ...p, loanRequest: v })), 0, 500, '×1000')}
-                                        {numInput('R&D Spend (£\'000)', dec.rdSpend, v => setDec(p => ({ ...p, rdSpend: v })), 0, 200, '×1000')}
+                                        {numInput('Dividend (cents per share)', dec.dividendPence, v => setDec(p => ({ ...p, dividendPence: v })), 0, 20, '¢')}
+                                        {numInput('Management Budget ($\'000)', dec.managementBudgetK, v => setDec(p => ({ ...p, managementBudgetK: v })), 50, 300, '×1000')}
+                                        {numInput('Loan Request ($\'000)', dec.loanRequest, v => setDec(p => ({ ...p, loanRequest: v })), 0, 500, '×1000')}
+                                        {numInput('R&D Spend ($\'000)', dec.rdSpend, v => setDec(p => ({ ...p, rdSpend: v })), 0, 200, '×1000')}
                                     </div>
                                     <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-800">
                                         <strong>Strategy:</strong> Higher R&D spending improves product quality and demand. Dividends affect share price positively. Loans incur interest at the central bank rate.

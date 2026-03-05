@@ -29,7 +29,7 @@ const Sidebar = () => {
     const sidebarContent = (
         <>
             <div className="flex shrink-0 items-center px-6 justify-between">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-900 bg-clip-text text-transparent">Topaz-Sync</h1>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-900 bg-clip-text text-transparent">CUI Simulation</h1>
                 <button onClick={() => setMobileOpen(false)} className="lg:hidden text-slate-400 hover:text-slate-600">
                     <X className="h-5 w-5" />
                 </button>
@@ -105,7 +105,7 @@ const Sidebar = () => {
         <>
             {/* Mobile hamburger */}
             <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
-                <h1 className="text-lg font-bold bg-gradient-to-r from-primary-600 to-primary-900 bg-clip-text text-transparent">Topaz-Sync</h1>
+                <h1 className="text-lg font-bold bg-gradient-to-r from-primary-600 to-primary-900 bg-clip-text text-transparent">CUI Simulation</h1>
                 <button onClick={() => setMobileOpen(true)} className="text-slate-600 hover:text-slate-800">
                     <Menu className="h-6 w-6" />
                 </button>

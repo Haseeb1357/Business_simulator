@@ -84,8 +84,8 @@ export const runSimulationEngine = async (gameId: number, quarter: number) => {
         const revenue = unitsSold * teamPrice_p1;
 
         // COGS
-        const materialCost = actualProduced * 40; // £40 per unit material
-        const assemblyWages = actualProduced * 7 * (118 / 60); // £7/hr * assembly time
+        const materialCost = actualProduced * 40; // $40 per unit material
+        const assemblyWages = actualProduced * 7 * (118 / 60); // $7/hr * assembly time
         const machinistWages = 213535; // Fixed quarterly cost
         const machineRunning = 107322;
         const closingStockVal = (actualProduced - unitsSold) * 40;
@@ -184,7 +184,7 @@ export const runSimulationEngine = async (gameId: number, quarter: number) => {
             }
         });
 
-        console.log(`[SIM] Team "${team.name}": Revenue £${revenue}, Net Profit £${netProfit}, Share ${newSharePrice.toFixed(1)}p`);
+        console.log(`[SIM] Team "${team.name}": Revenue $${revenue}, Net Profit $${netProfit}, Share ${newSharePrice.toFixed(1)}c`);
     }
 
     return { success: true, teamsProcessed: submittedCount };

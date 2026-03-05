@@ -27,7 +27,7 @@ const Login = () => {
                     ))}
                 </div>
                 <div className="relative z-10 max-w-lg">
-                    <h1 className="text-5xl font-extrabold mb-4 leading-tight">Topaz-Sync</h1>
+                    <h1 className="text-5xl font-extrabold mb-4 leading-tight">CUI Simulation</h1>
                     <p className="text-xl text-blue-200 mb-8">Business Strategy Simulation Platform</p>
                     <div className="space-y-4 text-blue-100 text-sm">
                         <div className="flex items-start gap-3">
@@ -54,7 +54,7 @@ const Login = () => {
             <div className="flex-1 flex items-center justify-center p-8 bg-white">
                 <div className="max-w-md w-full">
                     <div className="lg:hidden mb-8">
-                        <h1 className="text-3xl font-extrabold text-primary-600 mb-1">Topaz-Sync</h1>
+                        <h1 className="text-3xl font-extrabold text-primary-600 mb-1">CUI Simulation</h1>
                         <p className="text-slate-500">Business Strategy Simulation</p>
                     </div>
 
@@ -94,7 +94,7 @@ const Login = () => {
                     </form>
 
                     <p className="mt-8 text-center text-xs text-slate-400">
-                        Topaz-Sync v2.0 • Business Strategy Simulation Engine
+                        CUI Simulation v2.0 • Business Strategy Simulation Engine
                     </p>
                 </div>
             </div>
