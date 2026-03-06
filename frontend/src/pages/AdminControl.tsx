@@ -138,6 +138,43 @@ const AdminControl = () => {
                         </div>
                     </div>
 
+                    {/* Share Price Adjustments */}
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
+                        <h2 className="text-lg font-bold text-slate-800 mb-4">Public Company Share Prices</h2>
+                        <p className="text-sm text-slate-500 mb-4">Adjust the share price (in cents) for teams that have launched an IPO. Private companies cannot be adjusted here.</p>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {teams.map(t => {
+                                const ipoState = useSimulationStore.getState().getTeamIPOState(t.id);
+                                return (
+                                    <div key={t.id} className={`p-4 rounded-lg border ${ipoState.isPublic ? 'border-primary-200 bg-primary-50/30' : 'border-slate-200 bg-slate-50'}`}>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="font-bold text-slate-800">{t.name}</span>
+                                            {ipoState.isPublic ? (
+                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-200">PUBLIC</span>
+                                            ) : (
+                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">PRIVATE</span>
+                                            )}
+                                        </div>
+                                        {ipoState.isPublic ? (
+                                            <div>
+                                                <label className="block text-xs font-medium text-slate-600 mb-1">Share Price (¢)</label>
+                                                <input
+                                                    type="number"
+                                                    value={ipoState.sharePrice}
+                                                    onChange={e => useSimulationStore.getState().adminEditSharePrice(t.id, Number(e.target.value))}
+                                                    className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="text-sm text-slate-400 italic mt-6">Not available</div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
                     {/* Terminal Log */}
                     <div className="bg-slate-900 rounded-xl p-4 font-mono text-sm text-emerald-400 h-52 overflow-y-auto shadow-inner">
                         {logLines.length === 0 && <p className="text-slate-600">{'>'} Waiting for simulation command...</p>}

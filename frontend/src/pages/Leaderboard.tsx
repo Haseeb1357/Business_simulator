@@ -14,6 +14,7 @@ const Leaderboard = () => {
     const currentQuarter = useSimulationStore(s => s.currentQuarter);
     const allResults = useSimulationStore(s => s.allResults);
     const activeTeamId = useSimulationStore(s => s.activeTeamId);
+    const getTeamIPOState = useSimulationStore.getState().getTeamIPOState;
 
     const [activeTab, setActiveTab] = useState('ranking');
     const latestQ = currentQuarter - 1;
@@ -24,17 +25,19 @@ const Leaderboard = () => {
             const results = allResults.get(t.id) || [];
             const latest = results.find(r => r.quarter === latestQ);
             const prev = results.find(r => r.quarter === latestQ - 1);
+            const ipoState = getTeamIPOState(t.id);
             return {
                 ...t,
                 netProfit: latest?.kpis.netProfit || 0,
-                sharePrice: latest?.kpis.sharePrice || 116,
+                sharePrice: latest ? latest.kpis.sharePrice : ipoState.sharePrice,
                 marketShare: latest?.kpis.marketShare || 0,
-                companyValue: latest?.kpis.companyValue || 2000000,
+                companyValue: latest?.kpis.companyValue || (ipoState.isPublic ? ipoState.sharesIssued * ipoState.sharePrice : 2000000),
                 totalRevenue: latest?.kpis.totalRevenue || 0,
                 prevCompanyValue: prev?.kpis.companyValue || 2000000,
+                isPublic: ipoState.isPublic,
             };
         }).sort((a, b) => b.companyValue - a.companyValue);
-    }, [teams, allResults, latestQ]);
+    }, [teams, allResults, latestQ, getTeamIPOState]);
 
     // Share price history for line chart
     const sharePriceHistory = useMemo(() => {
@@ -43,7 +46,7 @@ const Leaderboard = () => {
             const point: Record<string, any> = { quarter: `Q${q}` };
             teams.forEach(t => {
                 const r = (allResults.get(t.id) || []).find(r => r.quarter === q);
-                point[t.name] = r?.kpis.sharePrice || 116;
+                point[t.name] = r?.kpis.sharePrice || 116; // Legacy default
             });
             data.push(point);
         }
@@ -134,7 +137,9 @@ const Leaderboard = () => {
                                                         {fmt(r.netProfit)}
                                                     </td>
                                                     <td className="px-4 py-3 text-right tabular-nums">{r.marketShare.toFixed(1)}%</td>
-                                                    <td className="px-4 py-3 text-right tabular-nums font-bold text-primary-600">{r.sharePrice}¢</td>
+                                                    <td className="px-4 py-3 text-right tabular-nums font-bold text-primary-600">
+                                                        {r.isPublic ? `${r.sharePrice}¢` : <span className="text-slate-400 font-normal">—</span>}
+                                                    </td>
                                                 </tr>
                                             ))}
                                         </tbody>

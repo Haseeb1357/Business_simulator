@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import {
-    TeamDecision, TeamQuarterResult, TeamCarryForward, GameConfig,
+    TeamDecision, TeamQuarterResult, TeamCarryForward, GameConfig, IPOState,
     getDefaultDecision, randomizeDecision, getInitialCarryForward,
     processQuarterSimulation,
 } from '../engine/simulationEngine';
@@ -43,12 +43,15 @@ interface SimulationState {
     processQuarter: () => void;
     resetGame: () => void;
     updateGameConfig: (config: Partial<GameConfig>) => void;
+    launchIPO: (teamId: number, sharePrice: number, sharesIssued: number) => void;
+    adminEditSharePrice: (teamId: number, newPrice: number) => void;
 
     // Helpers
     getTeamResult: (teamId: number, quarter: number) => TeamQuarterResult | undefined;
     getTeamLatestResult: (teamId: number) => TeamQuarterResult | undefined;
     getAllTeamLatestResults: () => TeamQuarterResult[];
     getTeamResultHistory: (teamId: number) => TeamQuarterResult[];
+    getTeamIPOState: (teamId: number) => IPOState;
 }
 
 // ---- Default Teams ----
@@ -196,6 +199,30 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
         set({ gameConfig: { ...get().gameConfig, ...config } });
     },
 
+    launchIPO: (teamId, sharePrice, sharesIssued) => {
+        const cfs = new Map(get().carryForwards);
+        const cf = cfs.get(teamId);
+        if (cf && !cf.ipoState.isPublic) {
+            cfs.set(teamId, {
+                ...cf,
+                ipoState: { isPublic: true, sharePrice, sharesIssued, ipoQuarter: get().currentQuarter },
+            });
+            set({ carryForwards: cfs });
+        }
+    },
+
+    adminEditSharePrice: (teamId, newPrice) => {
+        const cfs = new Map(get().carryForwards);
+        const cf = cfs.get(teamId);
+        if (cf && cf.ipoState.isPublic) {
+            cfs.set(teamId, {
+                ...cf,
+                ipoState: { ...cf.ipoState, sharePrice: newPrice },
+            });
+            set({ carryForwards: cfs });
+        }
+    },
+
     getTeamResult: (teamId, quarter) => {
         const results = get().allResults.get(teamId);
         return results?.find(r => r.quarter === quarter);
@@ -218,5 +245,10 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
 
     getTeamResultHistory: (teamId) => {
         return get().allResults.get(teamId) || [];
+    },
+
+    getTeamIPOState: (teamId) => {
+        const cf = get().carryForwards.get(teamId);
+        return cf?.ipoState ?? { isPublic: false, sharePrice: 0, sharesIssued: 0, ipoQuarter: null };
     },
 }));

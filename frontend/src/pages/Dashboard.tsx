@@ -17,6 +17,7 @@ const Dashboard = () => {
 
     const activeTeam = teams.find(t => t.id === activeTeamId);
     const latestQ = currentQuarter - 1;
+    const ipoState = useSimulationStore.getState().getTeamIPOState(activeTeamId);
 
     // Compute data from raw state
     const history = useMemo(() => allResults.get(activeTeamId) || [], [allResults, activeTeamId]);
@@ -105,9 +106,19 @@ const Dashboard = () => {
                                 {latest ? fmt(latest.kpis.netProfit) : '—'}
                             </p>
                         </div>
-                        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm relative overflow-hidden">
                             <h3 className="text-xs text-slate-500 uppercase tracking-wider font-medium">Share Price</h3>
-                            <p className="text-2xl font-bold mt-1 text-primary-600">{latest ? `${latest.kpis.sharePrice}¢` : '116.0¢'}</p>
+                            {ipoState.isPublic ? (
+                                <>
+                                    <p className="text-2xl font-bold mt-1 text-primary-600">{latest ? `${latest.kpis.sharePrice}¢` : `${ipoState.sharePrice}¢`}</p>
+                                    <span className="absolute top-4 right-4 text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-200">PUBLIC</span>
+                                </>
+                            ) : (
+                                <>
+                                    <p className="text-2xl font-bold mt-1 text-slate-400">—</p>
+                                    <span className="absolute top-4 right-4 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">PRIVATE</span>
+                                </>
+                            )}
                         </div>
                         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
                             <h3 className="text-xs text-slate-500 uppercase tracking-wider font-medium">Market Share</h3>

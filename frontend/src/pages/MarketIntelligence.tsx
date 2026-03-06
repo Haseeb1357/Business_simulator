@@ -1,15 +1,20 @@
+import React from 'react';
 import Sidebar from '../components/Sidebar';
 import { useSimulationStore } from '../store/simulationStore';
 
 const MarketIntelligence = () => {
-    const { teams, currentQuarter, allResults, gameConfig } = useSimulationStore();
+    const teams = useSimulationStore(s => s.teams);
+    const currentQuarter = useSimulationStore(s => s.currentQuarter);
+    const allResults = useSimulationStore(s => s.allResults);
+    const gameConfig = useSimulationStore(s => s.gameConfig);
     const latestQ = currentQuarter - 1;
 
     const getTeamData = (teamId: number) => {
         const results = allResults.get(teamId) || [];
         const latest = results.find(r => r.quarter === latestQ);
         const dec = useSimulationStore.getState().currentDecisions.get(teamId);
-        return { latest, dec };
+        const ipo = useSimulationStore.getState().getTeamIPOState(teamId);
+        return { latest, dec, ipo };
     };
 
     return (
@@ -35,13 +40,25 @@ const MarketIntelligence = () => {
                                         ))}
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-200">
-                                    {/* Share Price */}
+                                <tbody>
+                                    {/* Status */}
                                     <tr className="bg-slate-50/50">
-                                        <td className="px-4 py-2 font-medium text-slate-700 sticky left-0 bg-slate-50/50 z-10">Share Price (cents)</td>
+                                        <td className="px-4 py-2 font-medium text-slate-700 sticky left-0 bg-slate-50/50 z-10">Company Status</td>
                                         {teams.map(t => {
                                             const d = getTeamData(t.id);
-                                            return <td key={t.id} className="px-3 py-2 text-center tabular-nums">{d.latest?.kpis.sharePrice || 116.0}</td>;
+                                            return <td key={t.id} className="px-3 py-2 text-center text-xs font-semibold">
+                                                {d.ipo.isPublic ? <span className="text-blue-600">PUBLIC</span> : <span className="text-slate-500">PRIVATE</span>}
+                                            </td>;
+                                        })}
+                                    </tr>
+                                    {/* Share Price */}
+                                    <tr>
+                                        <td className="px-4 py-2 font-medium text-slate-700 sticky left-0 bg-white z-10">Share Price (cents)</td>
+                                        {teams.map(t => {
+                                            const d = getTeamData(t.id);
+                                            return <td key={t.id} className="px-3 py-2 text-center tabular-nums font-medium text-primary-600">
+                                                {d.ipo.isPublic ? `${d.latest ? d.latest.kpis.sharePrice : d.ipo.sharePrice}` : '—'}
+                                            </td>;
                                         })}
                                     </tr>
                                     {/* Net Profit */}
@@ -73,22 +90,22 @@ const MarketIntelligence = () => {
                                     </tr>
                                     {/* Product prices */}
                                     {(['p1', 'p2', 'p3'] as const).map((pk, pi) => (
-                                        <>
-                                            <tr key={`${pk}-home`} className="bg-slate-50/50">
+                                        <React.Fragment key={pk}>
+                                            <tr className="bg-slate-50/50">
                                                 <td className="px-4 py-2 font-medium text-slate-700 sticky left-0 bg-slate-50/50 z-10">Product {pi + 1}: Home Price ($)</td>
                                                 {teams.map(t => {
                                                     const d = getTeamData(t.id);
                                                     return <td key={t.id} className="px-3 py-2 text-center tabular-nums">{d.dec?.prices[pk].home || '—'}</td>;
                                                 })}
                                             </tr>
-                                            <tr key={`${pk}-export`}>
+                                            <tr>
                                                 <td className="px-4 py-2 font-medium text-slate-700 pl-8 sticky left-0 bg-white z-10">Export Price ($)</td>
                                                 {teams.map(t => {
                                                     const d = getTeamData(t.id);
                                                     return <td key={t.id} className="px-3 py-2 text-center tabular-nums">{d.dec?.prices[pk].export || '—'}</td>;
                                                 })}
                                             </tr>
-                                        </>
+                                        </React.Fragment>
                                     ))}
                                 </tbody>
                             </table>

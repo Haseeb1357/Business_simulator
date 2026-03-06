@@ -1,11 +1,12 @@
-import { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import { useSimulationStore } from '../store/simulationStore';
-import { Plus, X } from 'lucide-react';
 
 const TeamManagement = () => {
-    const { teams, activeTeamId, setActiveTeam, allResults, currentQuarter } = useSimulationStore();
-    const [showModal, setShowModal] = useState(false);
+    const teams = useSimulationStore(s => s.teams);
+    const activeTeamId = useSimulationStore(s => s.activeTeamId);
+    const setActiveTeam = useSimulationStore(s => s.setActiveTeam);
+    const allResults = useSimulationStore(s => s.allResults);
+    const currentQuarter = useSimulationStore(s => s.currentQuarter);
     const latestQ = currentQuarter - 1;
 
     const teamsData = teams.map(t => {

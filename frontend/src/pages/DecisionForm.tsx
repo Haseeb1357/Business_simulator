@@ -5,11 +5,12 @@ import { TeamDecision } from '../engine/simulationEngine';
 import { Dice5, Save, Send } from 'lucide-react';
 
 const DecisionForm = () => {
-    const { activeTeamId, currentQuarter, currentDecisions, submittedTeams, randomizeCurrentDecision, updateDecision, submitDecision } = useSimulationStore();
+    const { activeTeamId, currentQuarter, currentDecisions, submittedTeams, randomizeCurrentDecision, updateDecision, submitDecision, getTeamIPOState } = useSimulationStore();
     const isSubmitted = submittedTeams.has(activeTeamId);
     const [activeTab, setActiveTab] = useState('marketing');
     const [dec, setDec] = useState<TeamDecision>(currentDecisions.get(activeTeamId)!);
     const [saved, setSaved] = useState(false);
+    const ipoState = getTeamIPOState(activeTeamId);
 
     useEffect(() => {
         const d = currentDecisions.get(activeTeamId);
@@ -219,14 +220,51 @@ const DecisionForm = () => {
                             {activeTab === 'finance' && (
                                 <div className="space-y-8">
                                     <h3 className="text-lg font-semibold text-slate-900 border-b pb-2">Finance & R&D</h3>
+
+                                    {!ipoState.isPublic && (
+                                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div>
+                                                    <h4 className="text-md font-bold text-blue-900">Initial Public Offering (IPO)</h4>
+                                                    <p className="text-sm text-blue-700">Go public to raise capital. This action is permanent.</p>
+                                                </div>
+                                                <label className="relative inline-flex items-center cursor-pointer">
+                                                    <input type="checkbox" className="sr-only peer"
+                                                        checked={dec.launchIPO}
+                                                        onChange={e => setDec(p => ({ ...p, launchIPO: e.target.checked }))}
+                                                        disabled={isSubmitted}
+                                                    />
+                                                    <div className="w-11 h-6 bg-blue-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                    <span className="ml-3 text-sm font-medium text-blue-900">Launch IPO</span>
+                                                </label>
+                                            </div>
+                                            {dec.launchIPO && (
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-blue-200/50">
+                                                    {numInput('Initial Share Price (¢)', dec.ipoSharePrice || 100, v => setDec(p => ({ ...p, ipoSharePrice: v })), 10, 5000, '¢')}
+                                                    {numInput('Shares to Issue', dec.ipoSharesIssued || 1000000, v => setDec(p => ({ ...p, ipoSharesIssued: v })), 100000, 100000000)}
+                                                    <div className="md:col-span-2 text-xs font-semibold text-blue-800 bg-blue-100 p-2 rounded">
+                                                        Estimated Capital Raised: ${(((dec.ipoSharePrice || 100) / 100) * (dec.ipoSharesIssued || 1000000)).toLocaleString()}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {numInput('Dividend (cents per share)', dec.dividendPence, v => setDec(p => ({ ...p, dividendPence: v })), 0, 20, '¢')}
+                                        {ipoState.isPublic ? (
+                                            numInput('Dividend (cents per share)', dec.dividendCents, v => setDec(p => ({ ...p, dividendCents: v })), 0, 20, '¢')
+                                        ) : (
+                                            <div className="opacity-50 pointer-events-none">
+                                                {numInput('Dividend (cents per share)', 0, () => { }, 0, 0, '¢')}
+                                                <p className="text-xs text-slate-500 mt-1">N/A (Private Company)</p>
+                                            </div>
+                                        )}
                                         {numInput('Management Budget ($\'000)', dec.managementBudgetK, v => setDec(p => ({ ...p, managementBudgetK: v })), 50, 300, '×1000')}
                                         {numInput('Loan Request ($\'000)', dec.loanRequest, v => setDec(p => ({ ...p, loanRequest: v })), 0, 500, '×1000')}
                                         {numInput('R&D Spend ($\'000)', dec.rdSpend, v => setDec(p => ({ ...p, rdSpend: v })), 0, 200, '×1000')}
                                     </div>
                                     <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-800">
-                                        <strong>Strategy:</strong> Higher R&D spending improves product quality and demand. Dividends affect share price positively. Loans incur interest at the central bank rate.
+                                        <strong>Strategy:</strong> Higher R&D spending improves product quality and demand. Dividends affect share price positively (only for public companies). Loans incur interest at the central bank rate.
                                     </div>
                                 </div>
                             )}

@@ -26,10 +26,21 @@ export interface TeamDecision {
     recruitWorkers: number;
     dismissWorkers: number;
     trainWorkers: number;
-    dividendPence: number;
+    dividendCents: number;          // cents per share (only relevant if public)
     managementBudgetK: number;      // thousands
     loanRequest: number;            // thousands
     rdSpend: number;                // thousands
+    // IPO fields
+    launchIPO: boolean;             // true = team wants to go public this quarter
+    ipoSharePrice: number;          // initial share price in dollars
+    ipoSharesIssued: number;        // number of shares to issue
+}
+
+export interface IPOState {
+    isPublic: boolean;
+    sharePrice: number;             // current share price (0 if private)
+    sharesIssued: number;           // total shares outstanding (0 if private)
+    ipoQuarter: number | null;      // quarter when IPO happened
 }
 
 export interface ProductResult {
@@ -186,10 +197,13 @@ export function getDefaultDecision(): TeamDecision {
         recruitWorkers: 0,
         dismissWorkers: 0,
         trainWorkers: 0,
-        dividendPence: 4,
+        dividendCents: 0,
         managementBudgetK: 120,
         loanRequest: 0,
         rdSpend: 50,
+        launchIPO: false,
+        ipoSharePrice: 0,
+        ipoSharesIssued: 0,
     };
 }
 
@@ -218,10 +232,13 @@ export function randomizeDecision(): TeamDecision {
         recruitWorkers: randBetween(0, 10),
         dismissWorkers: Math.random() > 0.8 ? randBetween(1, 5) : 0,
         trainWorkers: randBetween(0, 8),
-        dividendPence: randBetween(0, 8),
+        dividendCents: randBetween(0, 8),
         managementBudgetK: randBetween(80, 180),
         loanRequest: Math.random() > 0.7 ? randBetween(50, 300) : 0,
         rdSpend: randBetween(20, 100),
+        launchIPO: false,
+        ipoSharePrice: 0,
+        ipoSharesIssued: 0,
     };
 }
 
@@ -236,7 +253,7 @@ export interface TeamCarryForward {
     materialStock: number;
     loans: number;
     reserves: number;
-    sharePrice: number;
+    ipoState: IPOState;
     cumulativeProfit: number;
     trainedWorkers: number;
 }
@@ -251,7 +268,7 @@ export function getInitialCarryForward(): TeamCarryForward {
         materialStock: 5000,
         loans: 0,
         reserves: 0,
-        sharePrice: 116.0,
+        ipoState: { isPublic: false, sharePrice: 0, sharesIssued: 0, ipoQuarter: null },
         cumulativeProfit: 0,
         trainedWorkers: 0,
     };
@@ -433,7 +450,22 @@ export function processQuarterSimulation(
         const netProfitBeforeTax = operatingProfit - interestPaid;
         const tax = netProfitBeforeTax > 0 ? Math.round(netProfitBeforeTax * 0.19) : 0;
         const netProfit = netProfitBeforeTax - tax;
-        const dividendTotal = dec.dividendPence * 800; // 800 = shares outstanding placeholder
+
+        // ---- IPO LOGIC ----
+        let currentIPO = { ...prev.ipoState };
+        let ipoCashInflow = 0;
+        if (!currentIPO.isPublic && dec.launchIPO && dec.ipoSharePrice > 0 && dec.ipoSharesIssued > 0) {
+            currentIPO = {
+                isPublic: true,
+                sharePrice: dec.ipoSharePrice,
+                sharesIssued: dec.ipoSharesIssued,
+                ipoQuarter: quarter,
+            };
+            ipoCashInflow = dec.ipoSharePrice * dec.ipoSharesIssued;
+        }
+
+        // Dividends only apply to public companies
+        const dividendTotal = currentIPO.isPublic ? dec.dividendCents * currentIPO.sharesIssued : 0;
         const retainedProfit = netProfit - dividendTotal;
 
         const pnl: ProfitAndLoss = {
@@ -463,7 +495,7 @@ export function processQuarterSimulation(
         };
 
         // ---- BALANCE SHEET ----
-        const newCash = prev.cash + totalRev * 0.65 - costOfSales * 0.8 - totalOverheads + dec.loanRequest * 1000 - newMachineCost - dividendTotal - interestPaid - tax;
+        const newCash = prev.cash + totalRev * 0.65 - costOfSales * 0.8 - totalOverheads + dec.loanRequest * 1000 - newMachineCost - dividendTotal - interestPaid - tax + ipoCashInflow;
         const newLoans = prev.loans + dec.loanRequest * 1000;
 
         const bs: BalanceSheet = {
@@ -491,7 +523,7 @@ export function processQuarterSimulation(
             longTermLiabilities: { loans: newLoans },
             netAssets: 0,
             capital: {
-                shareCapital: 2000000,
+                shareCapital: currentIPO.isPublic ? currentIPO.sharesIssued * currentIPO.sharePrice : 0,
                 reserves: prev.reserves + retainedProfit,
                 totalCapital: 0,
             },
@@ -524,10 +556,17 @@ export function processQuarterSimulation(
 
         // ---- KPIs ----
         const cumProfit = prev.cumulativeProfit + netProfit;
-        const sharePriceChange = (netProfit / 100000) * 3 + (dividendTotal > 0 ? 1.5 : -0.5);
-        const newSharePrice = Math.max(10, Math.round((prev.sharePrice + sharePriceChange) * 10) / 10);
+        let finalSharePrice = currentIPO.sharePrice;
+        if (currentIPO.isPublic && currentIPO.ipoQuarter !== quarter) {
+            // Share price evolves for public companies (not during IPO quarter itself)
+            const sharePriceChange = (netProfit / 100000) * 3 + (dividendTotal > 0 ? 1.5 : -0.5);
+            finalSharePrice = Math.max(1, Math.round((currentIPO.sharePrice + sharePriceChange) * 10) / 10);
+        }
+        if (currentIPO.isPublic) {
+            currentIPO.sharePrice = finalSharePrice;
+        }
         const marketShare = totalDemand > 0 ? Math.round((totalUnitsSold / (totalDemand * numTeams)) * 10000) / 100 : 0;
-        const companyValue = bs.netAssets;
+        const companyValue = currentIPO.isPublic ? finalSharePrice * currentIPO.sharesIssued : bs.netAssets;
 
         results.set(tid, {
             teamId: tid,
@@ -538,7 +577,7 @@ export function processQuarterSimulation(
             cashFlow: cf,
             kpis: {
                 netProfit,
-                sharePrice: newSharePrice,
+                sharePrice: finalSharePrice,
                 marketShare,
                 companyValue,
                 totalRevenue: totalRev,
@@ -561,7 +600,7 @@ export function processQuarterSimulation(
             materialStock: Math.max(0, materialAvailable - materialUsed),
             loans: newLoans,
             reserves: prev.reserves + retainedProfit,
-            sharePrice: newSharePrice,
+            ipoState: currentIPO,
             cumulativeProfit: cumProfit,
             trainedWorkers: prev.trainedWorkers + dec.trainWorkers,
         });
