@@ -4,10 +4,13 @@ import { useSimulationStore } from '../store/simulationStore';
 import { Play, RefreshCw, RotateCcw, CheckCircle2, AlertTriangle, Clock, X } from 'lucide-react';
 
 const AdminControl = () => {
-    const { currentQuarter, gameStatus, teams, submittedTeams, processQuarter, resetGame, processingLog, gameConfig, updateGameConfig } = useSimulationStore();
+    const { currentQuarter, teams, submittedTeams, processQuarter, resetGame, processingLog, gameConfig, updateGameConfig, addTeam, removeTeam, addNewsItem } = useSimulationStore();
     const [isProcessing, setIsProcessing] = useState(false);
     const [logLines, setLogLines] = useState<string[]>([]);
     const [showResetModal, setShowResetModal] = useState(false);
+    const [newTeamName, setNewTeamName] = useState('');
+    const [newsInput, setNewsInput] = useState('');
+    const [teamToDelete, setTeamToDelete] = useState<{ id: number; name: string } | null>(null);
 
     useEffect(() => { setLogLines(processingLog); }, [processingLog]);
 
@@ -30,6 +33,22 @@ const AdminControl = () => {
         setIsProcessing(false);
         setLogLines(['> Game reset to Quarter 1.']);
         setShowResetModal(false);
+    };
+
+    const handleAddTeam = () => {
+        if (newTeamName.trim()) {
+            addTeam(newTeamName.trim());
+            setNewTeamName('');
+            setLogLines(prev => [...prev, `> Added new team: ${newTeamName.trim()}`]);
+        }
+    };
+
+    const handleBroadcastNews = () => {
+        if (newsInput.trim()) {
+            addNewsItem(`Q${currentQuarter}: ${newsInput.trim()}`);
+            setNewsInput('');
+            setLogLines(prev => [...prev, `> Broadcasted news to all teams.`]);
+        }
     };
 
     return (
@@ -105,73 +124,84 @@ const AdminControl = () => {
                             </div>
                         </div>
 
-                        {/* Market Intervention */}
+                        {/* Market Intervention & News */}
                         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-                            <h2 className="text-lg font-bold text-slate-800 mb-4">Market Intervention</h2>
-                            <p className="text-sm text-slate-500 mb-4">Adjust economic variables for the next run.</p>
-                            <div className="space-y-4">
+                            <h2 className="text-lg font-bold text-slate-800 mb-4">Instructor Controls</h2>
+                            <div className="space-y-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">GDP Growth (%)</label>
-                                    <input type="number" value={gameConfig.gdpGrowth} step={0.1}
-                                        onChange={e => updateGameConfig({ gdpGrowth: Number(e.target.value) })}
-                                        className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm" />
+                                    <h3 className="text-sm font-medium text-slate-700 mb-2">Broadcast Quarterly News</h3>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={newsInput}
+                                            onChange={(e) => setNewsInput(e.target.value)}
+                                            placeholder="e.g. Interest rates rise by 1%..."
+                                            className="flex-1 border-slate-300 rounded-md shadow-sm sm:text-sm"
+                                        />
+                                        <button onClick={handleBroadcastNews} className="bg-primary-600 text-white px-3 py-2 rounded-md font-medium text-sm hover:bg-primary-700">Send</button>
+                                    </div>
+                                    <p className="text-xs text-slate-500 mt-1">This will be visible on all team dashboards.</p>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Interest Rate (%)</label>
-                                    <input type="number" value={gameConfig.interestRate} step={0.25}
-                                        onChange={e => updateGameConfig({ interestRate: Number(e.target.value) })}
-                                        className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm" />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Inflation Rate (%)</label>
-                                    <input type="number" value={gameConfig.inflationRate} step={0.1}
-                                        onChange={e => updateGameConfig({ inflationRate: Number(e.target.value) })}
-                                        className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm" />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Material Price ($ per 1000)</label>
-                                    <input type="number" value={gameConfig.materialPrice}
-                                        onChange={e => updateGameConfig({ materialPrice: Number(e.target.value) })}
-                                        className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm" />
+
+                                <div className="border-t border-slate-200 pt-4">
+                                    <h3 className="text-sm font-medium text-slate-700 mb-2">Economic Variables</h3>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <label className="block text-xs text-slate-500 mb-1">GDP Growth (%)</label>
+                                            <input type="number" value={gameConfig.gdpGrowth} step={0.1}
+                                                onChange={e => updateGameConfig({ gdpGrowth: Number(e.target.value) })}
+                                                className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-slate-500 mb-1">Interest Rate (%)</label>
+                                            <input type="number" value={gameConfig.interestRate} step={0.25}
+                                                onChange={e => updateGameConfig({ interestRate: Number(e.target.value) })}
+                                                className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm" />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Share Price Adjustments */}
+                    {/* Team Management */}
                     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
-                        <h2 className="text-lg font-bold text-slate-800 mb-4">Public Company Share Prices</h2>
-                        <p className="text-sm text-slate-500 mb-4">Adjust the share price (in cents) for teams that have launched an IPO. Private companies cannot be adjusted here.</p>
+                        <div className="flex justify-between items-center mb-4">
+                            <div>
+                                <h2 className="text-lg font-bold text-slate-800">Dynamic Team Management</h2>
+                                <p className="text-sm text-slate-500">Add or remove competing companies from the simulation.</p>
+                            </div>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={newTeamName}
+                                    onChange={(e) => setNewTeamName(e.target.value)}
+                                    placeholder="New Team Name"
+                                    className="border-slate-300 rounded-md shadow-sm sm:text-sm w-48"
+                                    onKeyDown={(e) => e.key === 'Enter' && handleAddTeam()}
+                                />
+                                <button onClick={handleAddTeam} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md text-sm font-medium shadow-sm">
+                                    + Add Team
+                                </button>
+                            </div>
+                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {teams.map(t => {
-                                const ipoState = useSimulationStore.getState().getTeamIPOState(t.id);
-                                return (
-                                    <div key={t.id} className={`p-4 rounded-lg border ${ipoState.isPublic ? 'border-primary-200 bg-primary-50/30' : 'border-slate-200 bg-slate-50'}`}>
-                                        <div className="flex justify-between items-center mb-2">
-                                            <span className="font-bold text-slate-800">{t.name}</span>
-                                            {ipoState.isPublic ? (
-                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-200">PUBLIC</span>
-                                            ) : (
-                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">PRIVATE</span>
-                                            )}
-                                        </div>
-                                        {ipoState.isPublic ? (
-                                            <div>
-                                                <label className="block text-xs font-medium text-slate-600 mb-1">Share Price (¢)</label>
-                                                <input
-                                                    type="number"
-                                                    value={ipoState.sharePrice}
-                                                    onChange={e => useSimulationStore.getState().adminEditSharePrice(t.id, Number(e.target.value))}
-                                                    className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm"
-                                                />
-                                            </div>
-                                        ) : (
-                                            <div className="text-sm text-slate-400 italic mt-6">Not available</div>
-                                        )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {teams.map(t => (
+                                <div key={t.id} className="flex flex-col bg-slate-50 border border-slate-200 rounded-lg p-4">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className="font-bold text-slate-800">{t.name}</span>
+                                        <button
+                                            onClick={() => setTeamToDelete({ id: t.id, name: t.name })}
+                                            className="text-slate-400 hover:text-red-600 transition-colors"
+                                            title="Remove Team"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
                                     </div>
-                                );
-                            })}
+                                    <span className="text-xs text-slate-500">Company {t.companyNumber}</span>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
@@ -186,6 +216,43 @@ const AdminControl = () => {
                     </div>
                 </main>
             </div>
+
+            {/* Team Deletion Confirmation Modal */}
+            {teamToDelete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setTeamToDelete(null)} />
+                    <div className="relative bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-6">
+                            <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-4">
+                                <AlertTriangle className="h-6 w-6" />
+                            </div>
+                            <h3 className="text-lg font-bold text-slate-900 mb-2">Remove Team</h3>
+                            <p className="text-sm text-slate-500">
+                                Are you sure you want to completely remove <strong>{teamToDelete.name}</strong> from the simulation?
+                                This action will delete their history, decisions, and all associated data. This action cannot be undone.
+                            </p>
+                        </div>
+                        <div className="bg-slate-50 px-6 py-4 flex justify-end gap-3 border-t border-slate-100">
+                            <button
+                                onClick={() => setTeamToDelete(null)}
+                                className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    removeTeam(teamToDelete.id);
+                                    setLogLines(prev => [...prev, `> Removed team: ${teamToDelete.name}`]);
+                                    setTeamToDelete(null);
+                                }}
+                                className="px-4 py-2 text-sm font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                            >
+                                Yes, Remove Team
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Reset Confirmation Modal */}
             {showResetModal && (

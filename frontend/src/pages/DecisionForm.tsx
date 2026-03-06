@@ -1,277 +1,303 @@
-import { useState, useEffect } from 'react';
-import Sidebar from '../components/Sidebar';
+import React, { useState, useEffect } from 'react';
 import { useSimulationStore } from '../store/simulationStore';
 import { TeamDecision } from '../engine/simulationEngine';
-import { Dice5, Save, Send } from 'lucide-react';
 
-const DecisionForm = () => {
-    const { activeTeamId, currentQuarter, currentDecisions, submittedTeams, randomizeCurrentDecision, updateDecision, submitDecision, getTeamIPOState } = useSimulationStore();
+interface DecisionFormProps {
+    embedded?: boolean;
+}
+
+const DecisionForm: React.FC<DecisionFormProps> = ({ embedded }) => {
+    const activeTeamId = useSimulationStore(state => state.activeTeamId);
+    const currentDecisions = useSimulationStore(state => state.currentDecisions);
+    const updateDecision = useSimulationStore(state => state.updateDecision);
+    const submitDecision = useSimulationStore(state => state.submitDecision);
+    const randomizeCurrentDecision = useSimulationStore(state => state.randomizeCurrentDecision);
+    const submittedTeams = useSimulationStore(state => state.submittedTeams);
+    const teams = useSimulationStore(state => state.teams);
+
     const isSubmitted = submittedTeams.has(activeTeamId);
-    const [activeTab, setActiveTab] = useState('marketing');
-    const [dec, setDec] = useState<TeamDecision>(currentDecisions.get(activeTeamId)!);
-    const [saved, setSaved] = useState(false);
-    const ipoState = getTeamIPOState(activeTeamId);
+    const team = teams.find(t => t.id === activeTeamId);
+
+    const [dec, setDec] = useState<TeamDecision | null>(null);
 
     useEffect(() => {
         const d = currentDecisions.get(activeTeamId);
         if (d) setDec(d);
     }, [activeTeamId, currentDecisions]);
 
-    const tabs = [
-        { id: 'marketing', name: 'Marketing & Sales' },
-        { id: 'production', name: 'Production & Ops' },
-        { id: 'hr', name: 'Human Resources' },
-        { id: 'finance', name: 'Finance & R&D' },
-    ];
+    if (!dec) return null;
 
-    const handleSave = () => {
-        updateDecision(activeTeamId, dec);
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
-    };
-
+    const handleSave = () => updateDecision(activeTeamId, dec);
     const handleSubmit = () => {
         updateDecision(activeTeamId, dec);
         submitDecision(activeTeamId);
     };
-
     const handleRandomize = () => {
         randomizeCurrentDecision();
         const d = useSimulationStore.getState().currentDecisions.get(activeTeamId);
         if (d) setDec(d);
     };
 
-    const updatePrice = (product: 'p1' | 'p2' | 'p3', market: 'home' | 'export', val: number) => {
-        setDec(prev => ({ ...prev, prices: { ...prev.prices, [product]: { ...prev.prices[product], [market]: val } } }));
+    const updateField = (path: (string | number)[], val: any) => {
+        setDec(prev => {
+            if (!prev) return prev;
+            const next = JSON.parse(JSON.stringify(prev));
+            let curr = next;
+            for (let i = 0; i < path.length - 1; i++) {
+                curr = curr[path[i]];
+            }
+            curr[path[path.length - 1]] = val;
+            return next;
+        });
     };
 
-    const updateAdv = (product: 'p1' | 'p2' | 'p3', type: 'trade' | 'press_tv' | 'merchandising', val: number) => {
-        setDec(prev => ({ ...prev, advertising: { ...prev.advertising, [product]: { ...prev.advertising[product], [type]: val } } }));
+    const StrInp = ({ path, className }: { path: (string | number)[], className?: string }) => {
+        let val: any = dec;
+        for (const p of path) val = val[p];
+        return <input className={`win-input ${className || ''}`} type="text" value={val} disabled={isSubmitted}
+            onChange={e => updateField(path, e.target.value)} />;
     };
 
-    const numInput = (label: string, value: number, onChange: (v: number) => void, min?: number, max?: number, suffix?: string) => (
-        <div>
-            <label className="text-sm text-slate-500 block mb-1">{label}</label>
-            <div className="relative">
-                <input type="number" value={value} onChange={e => onChange(Number(e.target.value))}
-                    min={min} max={max} disabled={isSubmitted}
-                    className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm disabled:bg-slate-100 disabled:text-slate-400" />
-                {suffix && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">{suffix}</span>}
-            </div>
-        </div>
-    );
+    const NumInp = ({ path, className }: { path: (string | number)[], className?: string }) => {
+        let val: any = dec;
+        for (const p of path) val = val[p];
+        return <input className={`win-input ${className || ''}`} type="number" value={val} disabled={isSubmitted}
+            onChange={e => updateField(path, Number(e.target.value) || 0)} />;
+    };
+
+    const ChkInp = ({ path, className }: { path: (string | number)[], className?: string }) => {
+        let val: any = dec;
+        for (const p of path) val = val[p];
+        return <input className={`${className || ''}`} type="checkbox" checked={val} disabled={isSubmitted}
+            onChange={e => updateField(path, e.target.checked)} />;
+    };
 
     return (
-        <div className="flex h-screen overflow-hidden">
-            <Sidebar />
-            <div className="flex-1 flex flex-col overflow-y-auto pt-16 lg:pt-0 lg:pl-72 bg-slate-50">
-                <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
-                    {/* Header */}
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
-                        <div>
-                            <h1 className="text-2xl font-bold text-slate-800">Quarterly Decisions</h1>
-                            <p className="text-slate-500">Submit your strategic inputs for Q{currentQuarter}</p>
+        <div className={`font-['Arial',sans-serif] text-sm flex flex-col items-center ${embedded ? '' : 'p-8 min-h-screen bg-[#fdf8e3]'}`}>
+
+            {!embedded && <h1 className="text-[#800000] text-3xl font-bold mb-4 self-start max-w-5xl w-full mx-auto">Decision Form</h1>}
+
+            <div className="bg-[#c0c0c0] win-border-outset w-full max-w-5xl flex flex-col mb-4">
+                <div className="bg-[#000080] text-white font-bold p-1 flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs border p-0.5 bg-[#c0c0c0] text-black">Topaz</span>
+                        <span>Topaz_Vbe Team Decision Sheet - {team?.name}</span>
+                    </div>
+                </div>
+
+                <div className="p-2 flex flex-col gap-2">
+                    <div className="flex gap-2">
+                        <div className="flex-1 flex flex-col gap-2">
+                            <fieldset className="win-fieldset bg-[#00ffff]">
+                                <legend className="win-legend text-black">Simulation Data</legend>
+                                <div className="flex justify-between items-center px-4 text-black">
+                                    <label className="flex items-center gap-2 font-bold">Simulation Code <StrInp path={['companyInfo', 'simulationCode']} className="w-24" /></label>
+                                    <label className="flex items-center gap-2 font-bold">Year: <StrInp path={['companyInfo', 'year']} className="w-16" /></label>
+                                    <label className="flex items-center gap-2 font-bold">Quarter: <StrInp path={['companyInfo', 'quarter']} className="w-12" /></label>
+                                </div>
+                            </fieldset>
+
+                            <fieldset className="win-fieldset bg-[#ffdead]">
+                                <legend className="win-legend text-black">Company Information</legend>
+                                <div className="flex justify-around items-center px-4 text-black text-center">
+                                    <div><div className="font-bold mb-1">Group Number</div><StrInp path={['companyInfo', 'groupNumber']} className="w-12 text-center" /></div>
+                                    <div><div className="font-bold mb-1">Company Number</div><StrInp path={['companyInfo', 'companyNumber']} className="w-12 text-center" /></div>
+                                    <div><div className="font-bold mb-1">Identity Number</div><StrInp path={['companyInfo', 'identityNumber']} className="w-16 text-center" /></div>
+                                    <div><div className="font-bold mb-1">Status</div><StrInp path={['companyInfo', 'status']} className="w-12 text-center" /></div>
+                                </div>
+                            </fieldset>
                         </div>
-                        <div className="flex items-center gap-3 flex-wrap">
-                            {isSubmitted && (
-                                <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
-                                    ✓ Submitted
-                                </span>
-                            )}
-                            <button onClick={handleRandomize} disabled={isSubmitted}
-                                className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-medium py-2 px-4 rounded-lg shadow-sm disabled:opacity-50 transition-all">
-                                <Dice5 className="h-4 w-4" /> Randomize
-                            </button>
-                            <button onClick={handleSave} disabled={isSubmitted}
-                                className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 font-medium py-2 px-4 rounded-lg shadow-sm hover:bg-slate-50 disabled:opacity-50">
-                                <Save className="h-4 w-4" /> {saved ? 'Saved ✓' : 'Save Draft'}
-                            </button>
-                            <button onClick={handleSubmit} disabled={isSubmitted}
-                                className="flex items-center gap-2 bg-primary-600 hover:bg-primary-500 text-white font-medium py-2 px-4 rounded-lg shadow-sm disabled:opacity-50">
-                                <Send className="h-4 w-4" /> Submit Decisions
-                            </button>
-                        </div>
+                        <fieldset className="win-fieldset bg-black text-center w-1/3 flex flex-col justify-center border-gray-500">
+                            <legend className="win-legend text-white bg-black">Information</legend>
+                            <div className="text-[#00ffff] font-bold text-xl leading-tight">Topaz-vbe<br />from Edit<br />Systems Ltd</div>
+                        </fieldset>
                     </div>
 
-                    {/* Tabs */}
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="border-b border-slate-200">
-                            <nav className="-mb-px flex px-6 overflow-x-auto">
-                                {tabs.map(tab => (
-                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                                        className={`whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition-colors ${activeTab === tab.id ? 'border-primary-500 text-primary-600' : 'border-transparent text-slate-500 hover:border-slate-300'}`}>
-                                        {tab.name}
-                                    </button>
-                                ))}
-                            </nav>
+                    <fieldset className="win-fieldset bg-[#e0e0e0]">
+                        <legend className="win-legend text-black">Decision Data</legend>
+                        <div className="flex flex-col gap-4 text-black text-xs sm:text-sm">
+                            <div className="flex">
+                                <div className="w-1/2 pr-4">
+                                    <div className="grid grid-cols-4 gap-2 mb-2 font-bold text-center items-end">
+                                        <div className="text-left">'Tick' to Implement Major<br />Product Improvements (if any):</div>
+                                        <div>Product 1<br /><ChkInp path={['productImprovements', 0]} className="w-4 h-4" /></div>
+                                        <div>Product 2<br /><ChkInp path={['productImprovements', 1]} className="w-4 h-4" /></div>
+                                        <div>Product 3<br /><ChkInp path={['productImprovements', 2]} className="w-4 h-4" /></div>
+                                    </div>
+
+                                    <div className="grid grid-cols-4 gap-2 mb-2 font-bold items-center">
+                                        <div className="text-right pr-2">Prices:<br />(£'s)</div><div></div><div></div><div></div>
+                                    </div>
+
+                                    <div className="grid grid-cols-4 gap-2 mb-2 items-center">
+                                        <div className="font-bold text-right pr-2">Export Market</div>
+                                        <div><NumInp path={['prices', 'exportMarket', 0]} className="w-full" /></div>
+                                        <div><NumInp path={['prices', 'exportMarket', 1]} className="w-full" /></div>
+                                        <div><NumInp path={['prices', 'exportMarket', 2]} className="w-full" /></div>
+                                    </div>
+
+                                    <div className="grid grid-cols-4 gap-2 mb-4 items-center">
+                                        <div className="font-bold text-right pr-2">Home Markets</div>
+                                        <div><NumInp path={['prices', 'homeMarkets', 0]} className="w-full" /></div>
+                                        <div><NumInp path={['prices', 'homeMarkets', 1]} className="w-full" /></div>
+                                        <div><NumInp path={['prices', 'homeMarkets', 2]} className="w-full" /></div>
+                                    </div>
+
+                                    <div className="font-bold mb-2">Promotion Expenditure:</div>
+                                    <div className="grid grid-cols-4 gap-2 mb-1 items-center">
+                                        <div className="font-bold text-right pr-2">Trade Press<br />(£'000)</div>
+                                        <div><NumInp path={['promotion', 'tradePress', 0]} className="w-full" /></div>
+                                        <div><NumInp path={['promotion', 'tradePress', 1]} className="w-full" /></div>
+                                        <div><NumInp path={['promotion', 'tradePress', 2]} className="w-full" /></div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2 mb-1 items-center">
+                                        <div className="font-bold text-right pr-2">Advertising<br />Support</div>
+                                        <div><NumInp path={['promotion', 'advertisingSupport', 0]} className="w-full" /></div>
+                                        <div><NumInp path={['promotion', 'advertisingSupport', 1]} className="w-full" /></div>
+                                        <div><NumInp path={['promotion', 'advertisingSupport', 2]} className="w-full" /></div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2 mb-4 items-center">
+                                        <div className="font-bold text-right pr-2">Merchandising</div>
+                                        <div><NumInp path={['promotion', 'merchandising', 0]} className="w-full" /></div>
+                                        <div><NumInp path={['promotion', 'merchandising', 1]} className="w-full" /></div>
+                                        <div><NumInp path={['promotion', 'merchandising', 2]} className="w-full" /></div>
+                                    </div>
+
+                                    <div className="grid grid-cols-4 gap-2 items-center mb-4">
+                                        <div className="font-bold text-right pr-2">Assembly Time: (Minutes)</div>
+                                        <div><NumInp path={['assemblyTime', 0]} className="w-full" /></div>
+                                        <div><NumInp path={['assemblyTime', 1]} className="w-full" /></div>
+                                        <div><NumInp path={['assemblyTime', 2]} className="w-full" /></div>
+                                    </div>
+                                </div>
+
+                                <div className="w-1/2 pl-4 border-l-2 border-gray-400">
+                                    <div className="flex justify-between items-center mb-2 font-bold">
+                                        <div>Dividend Rate: (pence/share) <NumInp path={['dividendRate']} className="w-12 ml-2" /></div>
+                                        <div>Days Credit Allowed: <NumInp path={['daysCreditAllowed']} className="w-12 ml-2" /></div>
+                                    </div>
+                                    <div className="flex justify-between items-center mb-4 font-bold">
+                                        <div>Vans to Buy: <NumInp path={['vansToBuy']} className="w-12 ml-2" /></div>
+                                        <div>Vans to Sell: <NumInp path={['vansToSell']} className="w-12 ml-2" /></div>
+                                    </div>
+
+                                    <div className="flex gap-4 mb-4 font-bold items-center">
+                                        <div>Information<br />Wanted:</div>
+                                        <div>on Other<br />Companies <ChkInp path={['informationWanted', 'otherCompanies']} className="ml-1" /></div>
+                                        <div>on Market<br />Shares <ChkInp path={['informationWanted', 'marketShares']} className="ml-1" /></div>
+                                    </div>
+
+                                    <div className="grid grid-cols-4 gap-2 mb-2 font-bold text-center">
+                                        <div></div><div>Product 1</div><div>Product 2</div><div>Product 3</div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2 mb-1 items-center">
+                                        <div className="font-bold text-right pr-2 leading-tight">Make and<br />Deliver<br />Products to:</div>
+                                        <div></div><div></div><div></div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2 mb-1 items-center">
+                                        <div className="font-bold text-right pr-2">Export Area</div>
+                                        <div><NumInp path={['deliveries', 'exportArea', 0]} className="w-full" /></div>
+                                        <div><NumInp path={['deliveries', 'exportArea', 1]} className="w-full" /></div>
+                                        <div><NumInp path={['deliveries', 'exportArea', 2]} className="w-full" /></div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2 mb-1 items-center">
+                                        <div className="font-bold text-right pr-2">South Area</div>
+                                        <div><NumInp path={['deliveries', 'southArea', 0]} className="w-full" /></div>
+                                        <div><NumInp path={['deliveries', 'southArea', 1]} className="w-full" /></div>
+                                        <div><NumInp path={['deliveries', 'southArea', 2]} className="w-full" /></div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2 mb-1 items-center">
+                                        <div className="font-bold text-right pr-2">West Area</div>
+                                        <div><NumInp path={['deliveries', 'westArea', 0]} className="w-full" /></div>
+                                        <div><NumInp path={['deliveries', 'westArea', 1]} className="w-full" /></div>
+                                        <div><NumInp path={['deliveries', 'westArea', 2]} className="w-full" /></div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2 mb-4 items-center">
+                                        <div className="font-bold text-right pr-2">North Area</div>
+                                        <div><NumInp path={['deliveries', 'northArea', 0]} className="w-full" /></div>
+                                        <div><NumInp path={['deliveries', 'northArea', 1]} className="w-full" /></div>
+                                        <div><NumInp path={['deliveries', 'northArea', 2]} className="w-full" /></div>
+                                    </div>
+                                    <div className="flex items-center gap-2 font-bold mb-4">
+                                        Research Expenditure:(£'000) <NumInp path={['researchExpenditure']} className="w-16" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr className="border-gray-400 border-t-2" />
+
+                            <div className="flex">
+                                <div className="w-1/2 pr-4">
+                                    <div className="flex justify-between items-center mb-4 font-bold">
+                                        <div>Salespeople<br />Allocated to</div>
+                                        <div className="text-center">Export<br />Area<br /><NumInp path={['salesforceAllocated', 'exportArea']} className="w-10 mt-1" /></div>
+                                        <div className="text-center">South<br />Area<br /><NumInp path={['salesforceAllocated', 'southArea']} className="w-10 mt-1" /></div>
+                                        <div className="text-center">West<br />Area<br /><NumInp path={['salesforceAllocated', 'westArea']} className="w-10 mt-1" /></div>
+                                        <div className="text-center">North<br />Area<br /><NumInp path={['salesforceAllocated', 'northArea']} className="w-10 mt-1" /></div>
+                                    </div>
+
+                                    <div className="flex justify-between items-center mb-2 font-bold">
+                                        <div>Salespeople's<br />Remuneration</div>
+                                        <div className="text-right">Quarterly<br />Salary:(£'00) <NumInp path={['salesforceRemuneration', 'quarterlySalary']} className="w-12 ml-1" /></div>
+                                        <div className="text-right">% Sales<br />Commission: <NumInp path={['salesforceRemuneration', 'commission']} className="w-12 ml-1" /></div>
+                                    </div>
+
+                                    <div className="flex justify-between items-center mb-2 font-bold">
+                                        <div>Assembly Workers'<br />hourly wage rate:</div>
+                                        <div className="flex items-center gap-1">(Pounds.Pence)<br /><NumInp path={['assemblyWorkersWage', 'pounds']} className="w-8" /> . <NumInp path={['assemblyWorkersWage', 'pence']} className="w-8" /></div>
+                                        <div>Shift level: <NumInp path={['shiftLevel']} className="w-12 ml-1" /></div>
+                                    </div>
+                                    <div className="flex items-center gap-2 font-bold mb-2">
+                                        Quarterly Management Budget:( £'000) <NumInp path={['managementBudget']} className="w-16" />
+                                    </div>
+                                    <div className="flex justify-between items-center font-bold">
+                                        <div>Contract Maintenance hours: <NumInp path={['contractMaintenanceHours']} className="w-12 ml-1" /></div>
+                                        <div>Machines to Sell: <NumInp path={['machinesToSell']} className="w-12 ml-1" /></div>
+                                    </div>
+                                </div>
+
+                                <div className="w-1/2 pl-4 border-l-2 border-gray-400 flex flex-col justify-end">
+                                    <div className="flex gap-4 font-bold items-center mb-2">
+                                        <div className="w-32">Salespeople</div>
+                                        <div>Recruit <NumInp path={['salesforce', 'recruit']} className="w-10" /></div>
+                                        <div>Dismiss <NumInp path={['salesforce', 'dismiss']} className="w-10" /></div>
+                                        <div>Train <NumInp path={['salesforce', 'train']} className="w-10" /></div>
+                                    </div>
+                                    <div className="flex gap-4 font-bold items-center mb-6">
+                                        <div className="w-32">Assembly Workers:</div>
+                                        <div>Recruit <NumInp path={['assemblyWorkers', 'recruit']} className="w-10" /></div>
+                                        <div>Dismiss <NumInp path={['assemblyWorkers', 'dismiss']} className="w-10" /></div>
+                                        <div>Train <NumInp path={['assemblyWorkers', 'train']} className="w-10" /></div>
+                                    </div>
+                                    <div className="flex justify-between font-bold items-end mb-4 text-center">
+                                        <div className="text-left">Raw Material:</div>
+                                        <div>Units to Order<br /><NumInp path={['rawMaterial', 'unitsToOrder']} className="w-20 mt-1" /></div>
+                                        <div>Supplier No.<br /><NumInp path={['rawMaterial', 'supplierNo']} className="w-12 mt-1" /></div>
+                                        <div>No. of Deliveries<br /><NumInp path={['rawMaterial', 'deliveries']} className="w-12 mt-1" /></div>
+                                    </div>
+                                    <div className="flex justify-end items-center font-bold gap-2">
+                                        New Machines to Order: <NumInp path={['newMachinesToOrder']} className="w-16" />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-
-                        <div className="p-6">
-                            {/* ---- MARKETING TAB ---- */}
-                            {activeTab === 'marketing' && (
-                                <div className="space-y-8">
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-slate-900 border-b pb-2 mb-4">Pricing Strategy ($)</h3>
-                                        <div className="overflow-x-auto">
-                                            <table className="min-w-full text-sm">
-                                                <thead>
-                                                    <tr className="border-b border-slate-200">
-                                                        <th className="text-left py-2 pr-4 font-medium text-slate-600">Product</th>
-                                                        <th className="text-left py-2 px-4 font-medium text-slate-600">Home Price ($)</th>
-                                                        <th className="text-left py-2 px-4 font-medium text-slate-600">Export Price ($)</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {(['p1', 'p2', 'p3'] as const).map((pk, i) => (
-                                                        <tr key={pk} className="border-b border-slate-100">
-                                                            <td className="py-3 pr-4 font-medium text-slate-800">Product {i + 1}</td>
-                                                            <td className="py-3 px-4">
-                                                                <input type="number" value={dec.prices[pk].home} onChange={e => updatePrice(pk, 'home', Number(e.target.value))}
-                                                                    disabled={isSubmitted} className="w-28 border-slate-300 rounded-md shadow-sm sm:text-sm disabled:bg-slate-100" />
-                                                            </td>
-                                                            <td className="py-3 px-4">
-                                                                <input type="number" value={dec.prices[pk].export} onChange={e => updatePrice(pk, 'export', Number(e.target.value))}
-                                                                    disabled={isSubmitted} className="w-28 border-slate-300 rounded-md shadow-sm sm:text-sm disabled:bg-slate-100" />
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-slate-900 border-b pb-2 mb-4">Advertising Expenditure ($'000)</h3>
-                                        <div className="overflow-x-auto">
-                                            <table className="min-w-full text-sm">
-                                                <thead>
-                                                    <tr className="border-b border-slate-200">
-                                                        <th className="text-left py-2 pr-4 font-medium text-slate-600">Product</th>
-                                                        <th className="text-left py-2 px-4 font-medium text-slate-600">Trade Press</th>
-                                                        <th className="text-left py-2 px-4 font-medium text-slate-600">Press & TV</th>
-                                                        <th className="text-left py-2 px-4 font-medium text-slate-600">Merchandising</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {(['p1', 'p2', 'p3'] as const).map((pk, i) => (
-                                                        <tr key={pk} className="border-b border-slate-100">
-                                                            <td className="py-3 pr-4 font-medium text-slate-800">Product {i + 1}</td>
-                                                            <td className="py-3 px-4">
-                                                                <input type="number" value={dec.advertising[pk].trade} onChange={e => updateAdv(pk, 'trade', Number(e.target.value))}
-                                                                    disabled={isSubmitted} className="w-24 border-slate-300 rounded-md shadow-sm sm:text-sm disabled:bg-slate-100" />
-                                                            </td>
-                                                            <td className="py-3 px-4">
-                                                                <input type="number" value={dec.advertising[pk].press_tv} onChange={e => updateAdv(pk, 'press_tv', Number(e.target.value))}
-                                                                    disabled={isSubmitted} className="w-24 border-slate-300 rounded-md shadow-sm sm:text-sm disabled:bg-slate-100" />
-                                                            </td>
-                                                            <td className="py-3 px-4">
-                                                                <input type="number" value={dec.advertising[pk].merchandising} onChange={e => updateAdv(pk, 'merchandising', Number(e.target.value))}
-                                                                    disabled={isSubmitted} className="w-24 border-slate-300 rounded-md shadow-sm sm:text-sm disabled:bg-slate-100" />
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* ---- PRODUCTION TAB ---- */}
-                            {activeTab === 'production' && (
-                                <div className="space-y-8">
-                                    <h3 className="text-lg font-semibold text-slate-900 border-b pb-2">Production & Operations</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {numInput('Raw Material Order (thousands)', dec.rawMaterialOrder, v => setDec(p => ({ ...p, rawMaterialOrder: v })), 0, 30, '×1000')}
-                                        <div>
-                                            <label className="text-sm text-slate-500 block mb-1">Shift Level</label>
-                                            <select value={dec.shiftLevel} onChange={e => setDec(p => ({ ...p, shiftLevel: Number(e.target.value) }))}
-                                                disabled={isSubmitted} className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm disabled:bg-slate-100">
-                                                <option value={1}>Single Shift (Normal)</option>
-                                                <option value={2}>Overtime (+35% capacity, +50% cost)</option>
-                                                <option value={3}>Double Shift (+60% capacity, +100% cost)</option>
-                                            </select>
-                                        </div>
-                                        {numInput('Maintenance Hours', dec.maintenanceHours, v => setDec(p => ({ ...p, maintenanceHours: v })), 0, 200, 'hrs')}
-                                        {numInput('Purchase New Machines', dec.machinePurchase, v => setDec(p => ({ ...p, machinePurchase: v })), 0, 10)}
-                                    </div>
-                                    <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
-                                        <strong>Tip:</strong> Higher maintenance hours reduce product rejection rates. Overtime shifts increase capacity but cost 50% more. Each new machine costs $100,000 and adds 1,200 hours of capacity.
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* ---- HR TAB ---- */}
-                            {activeTab === 'hr' && (
-                                <div className="space-y-8">
-                                    <h3 className="text-lg font-semibold text-slate-900 border-b pb-2">Human Resources</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {numInput('Recruit Assembly Workers', dec.recruitWorkers, v => setDec(p => ({ ...p, recruitWorkers: v })), 0, 30)}
-                                        {numInput('Dismiss Assembly Workers', dec.dismissWorkers, v => setDec(p => ({ ...p, dismissWorkers: v })), 0, 30)}
-                                        {numInput('Train Workers', dec.trainWorkers, v => setDec(p => ({ ...p, trainWorkers: v })), 0, 20)}
-                                    </div>
-                                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-                                        <strong>Costs:</strong> Recruitment costs $800/worker. Dismissal costs $1,200/worker. Training costs $500/worker but increases productivity by up to 15%.
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* ---- FINANCE TAB ---- */}
-                            {activeTab === 'finance' && (
-                                <div className="space-y-8">
-                                    <h3 className="text-lg font-semibold text-slate-900 border-b pb-2">Finance & R&D</h3>
-
-                                    {!ipoState.isPublic && (
-                                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <div>
-                                                    <h4 className="text-md font-bold text-blue-900">Initial Public Offering (IPO)</h4>
-                                                    <p className="text-sm text-blue-700">Go public to raise capital. This action is permanent.</p>
-                                                </div>
-                                                <label className="relative inline-flex items-center cursor-pointer">
-                                                    <input type="checkbox" className="sr-only peer"
-                                                        checked={dec.launchIPO}
-                                                        onChange={e => setDec(p => ({ ...p, launchIPO: e.target.checked }))}
-                                                        disabled={isSubmitted}
-                                                    />
-                                                    <div className="w-11 h-6 bg-blue-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                                    <span className="ml-3 text-sm font-medium text-blue-900">Launch IPO</span>
-                                                </label>
-                                            </div>
-                                            {dec.launchIPO && (
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-blue-200/50">
-                                                    {numInput('Initial Share Price (¢)', dec.ipoSharePrice || 100, v => setDec(p => ({ ...p, ipoSharePrice: v })), 10, 5000, '¢')}
-                                                    {numInput('Shares to Issue', dec.ipoSharesIssued || 1000000, v => setDec(p => ({ ...p, ipoSharesIssued: v })), 100000, 100000000)}
-                                                    <div className="md:col-span-2 text-xs font-semibold text-blue-800 bg-blue-100 p-2 rounded">
-                                                        Estimated Capital Raised: ${(((dec.ipoSharePrice || 100) / 100) * (dec.ipoSharesIssued || 1000000)).toLocaleString()}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {ipoState.isPublic ? (
-                                            numInput('Dividend (cents per share)', dec.dividendCents, v => setDec(p => ({ ...p, dividendCents: v })), 0, 20, '¢')
-                                        ) : (
-                                            <div className="opacity-50 pointer-events-none">
-                                                {numInput('Dividend (cents per share)', 0, () => { }, 0, 0, '¢')}
-                                                <p className="text-xs text-slate-500 mt-1">N/A (Private Company)</p>
-                                            </div>
-                                        )}
-                                        {numInput('Management Budget ($\'000)', dec.managementBudgetK, v => setDec(p => ({ ...p, managementBudgetK: v })), 50, 300, '×1000')}
-                                        {numInput('Loan Request ($\'000)', dec.loanRequest, v => setDec(p => ({ ...p, loanRequest: v })), 0, 500, '×1000')}
-                                        {numInput('R&D Spend ($\'000)', dec.rdSpend, v => setDec(p => ({ ...p, rdSpend: v })), 0, 200, '×1000')}
-                                    </div>
-                                    <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-800">
-                                        <strong>Strategy:</strong> Higher R&D spending improves product quality and demand. Dividends affect share price positively (only for public companies). Loans incur interest at the central bank rate.
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </main>
+                    </fieldset>
+                </div>
             </div>
+
+            <div className="flex justify-end gap-3 w-full max-w-5xl mt-2 pb-8">
+                {isSubmitted && <div className="px-4 py-2 font-bold text-emerald-700 bg-emerald-100 rounded flex-1">✓ Decisions Submitted</div>}
+                <button onClick={handleRandomize} disabled={isSubmitted} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 shadow disabled:opacity-50">
+                    Randomize Data
+                </button>
+                <button onClick={handleSave} disabled={isSubmitted} className="bg-slate-600 hover:bg-slate-700 text-white font-bold py-2 px-6 shadow disabled:opacity-50">
+                    Save Draft
+                </button>
+                <button onClick={handleSubmit} disabled={isSubmitted} className="bg-[#800000] hover:bg-red-800 text-white font-bold py-2 px-6 shadow disabled:opacity-50">
+                    Submit Decisions
+                </button>
+            </div>
+
         </div>
     );
 };

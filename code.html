@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Decision Form</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#800000",
+                        "background-light": "#fdf8e3",
+                        "background-dark": "#1a1a1a",
+                        "win-gray": "#c0c0c0",
+                        "win-dark-gray": "#808080",
+                        "win-blue": "#000080",
+                        "win-cyan": "#00ffff",
+                        "win-peach": "#ffdead",
+                    },
+                    fontFamily: {
+                        display: ["Arial", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0px",
+                    },
+                },
+            },
+        };
+    </script>
+<style>
+        .win-border-outset {
+            border: 2px solid;
+            border-top-color: #ffffff;
+            border-left-color: #ffffff;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+        }
+        .win-border-inset {
+            border: 2px solid;
+            border-top-color: #808080;
+            border-left-color: #808080;
+            border-right-color: #ffffff;
+            border-bottom-color: #ffffff;
+        }
+        .win-input {
+            border: 2px solid;
+            border-top-color: #808080;
+            border-left-color: #808080;
+            border-right-color: #ffffff;
+            border-bottom-color: #ffffff;
+            padding: 2px 4px;
+            height: 24px;
+        }
+        .win-fieldset {
+            border: 2px groove #ffffff;
+            padding: 8px;
+            margin-top: 8px;
+        }
+        .win-legend {
+            font-weight: bold;
+            padding: 0 4px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-sm min-h-screen p-8 flex flex-col items-center">
+<h1 class="text-primary text-3xl font-bold mb-4 self-start max-w-5xl w-full mx-auto">Decision Form (click any active area as a link)</h1>
+<div class="bg-win-gray win-border-outset w-full max-w-5xl flex flex-col">
+<div class="bg-win-blue text-white font-bold p-1 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="text-xs border p-0.5 bg-win-gray text-black">Topaz</span>
+<span>Topaz_Vbe Team Decision Sheet</span>
+</div>
+<div class="flex gap-1">
+<button class="bg-win-gray win-border-outset px-2 py-0.5 text-black font-bold text-xs">_</button>
+<button class="bg-win-gray win-border-outset px-2 py-0.5 text-black font-bold text-xs">□</button>
+<button class="bg-win-gray win-border-outset px-2 py-0.5 text-black font-bold text-xs">X</button>
+</div>
+</div>
+<div class="p-2 flex flex-col gap-2">
+<div class="flex gap-2">
+<div class="flex-1 flex flex-col gap-2">
+<fieldset class="win-fieldset bg-win-cyan">
+<legend class="win-legend text-black">Simulation Data</legend>
+<div class="flex justify-between items-center px-4 text-black">
+<label class="flex items-center gap-2 font-bold">Simulation Code <input class="win-input w-24" type="text"/></label>
+<label class="flex items-center gap-2 font-bold">Year: <input class="win-input w-16" type="text"/></label>
+<label class="flex items-center gap-2 font-bold">Quarter: <input class="win-input w-12" type="text"/></label>
+</div>
+</fieldset>
+<fieldset class="win-fieldset bg-win-peach">
+<legend class="win-legend text-black">Company Information</legend>
+<div class="flex justify-around items-center px-4 text-black text-center">
+<div>
+<div class="font-bold mb-1">Group Number</div>
+<input class="win-input w-12 text-center" type="text" value="1"/>
+</div>
+<div>
+<div class="font-bold mb-1">Company Number</div>
+<input class="win-input w-12 text-center" type="text"/>
+</div>
+<div>
+<div class="font-bold mb-1">Identity Number</div>
+<input class="win-input w-16 text-center" type="text"/>
+</div>
+<div>
+<div class="font-bold mb-1">Status</div>
+<input class="win-input w-12 text-center" type="text" value="2"/>
+</div>
+</div>
+</fieldset>
+</div>
+<fieldset class="win-fieldset bg-black text-center w-1/3 flex flex-col justify-center border-gray-500">
+<legend class="win-legend text-white bg-black">Information</legend>
+<div class="text-win-cyan font-bold text-xl leading-tight">
+                        Topaz-vbe<br/>
+                        from Edit<br/>
+                        Systems Ltd
+                    </div>
+</fieldset>
+</div>
+<fieldset class="win-fieldset bg-[#e0e0e0]">
+<legend class="win-legend text-black">Decision Data</legend>
+<div class="flex flex-col gap-4 text-black">
+<div class="flex">
+<div class="w-1/2 pr-4">
+<div class="grid grid-cols-4 gap-2 mb-2 font-bold text-center items-end">
+<div class="text-left">'Tick' to Implement Major<br/>Product Improvements (if any):</div>
+<div>Product 1<br/><input class="w-4 h-4" type="checkbox"/></div>
+<div>Product 2<br/><input class="w-4 h-4" type="checkbox"/></div>
+<div>Product 3<br/><input class="w-4 h-4" type="checkbox"/></div>
+</div>
+<div class="grid grid-cols-4 gap-2 mb-2 font-bold items-center">
+<div class="text-right pr-2">Prices:<br/>(£'s)</div>
+<div></div><div></div><div></div>
+</div>
+<div class="grid grid-cols-4 gap-2 mb-2 items-center">
+<div class="font-bold text-right pr-2">Export Market</div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+</div>
+<div class="grid grid-cols-4 gap-2 mb-4 items-center">
+<div class="font-bold text-right pr-2">Home Markets</div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+</div>
+<div class="font-bold mb-2">Promotion Expenditure:</div>
+<div class="grid grid-cols-4 gap-2 mb-1 items-center">
+<div class="font-bold text-right pr-2">Trade Press<br/>(£'000)</div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+</div>
+<div class="grid grid-cols-4 gap-2 mb-1 items-center">
+<div class="font-bold text-right pr-2">Advertising<br/>Support</div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+</div>
+<div class="grid grid-cols-4 gap-2 mb-4 items-center">
+<div class="font-bold text-right pr-2">Merchandising</div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+</div>
+<div class="grid grid-cols-4 gap-2 items-center mb-4">
+<div class="font-bold text-right pr-2">Assembly Time: (Minutes)</div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+</div>
+</div>
+<div class="w-1/2 pl-4 border-l-2 border-gray-400">
+<div class="flex justify-between items-center mb-2 font-bold">
+<div>Dividend Rate: (pence/share) <input class="win-input w-12 ml-2" type="text"/></div>
+<div>Days Credit Allowed: <input class="win-input w-12 ml-2" type="text"/></div>
+</div>
+<div class="flex justify-between items-center mb-4 font-bold">
+<div>Vans to Buy: <input class="win-input w-12 ml-2" type="text"/></div>
+<div>Vans to Sell: <input class="win-input w-12 ml-2" type="text"/></div>
+</div>
+<div class="flex gap-4 mb-4 font-bold items-center">
+<div>Information<br/>Wanted:</div>
+<div>on Other<br/>Companies <input class="ml-1" type="checkbox"/></div>
+<div>on Market<br/>Shares <input class="ml-1" type="checkbox"/></div>
+</div>
+<div class="grid grid-cols-4 gap-2 mb-2 font-bold text-center">
+<div></div>
+<div>Product 1</div>
+<div>Product 2</div>
+<div>Product 3</div>
+</div>
+<div class="grid grid-cols-4 gap-2 mb-1 items-center">
+<div class="font-bold text-right pr-2 leading-tight">Make and<br/>Deliver<br/>Products to:</div>
+<div></div><div></div><div></div>
+</div>
+<div class="grid grid-cols-4 gap-2 mb-1 items-center">
+<div class="font-bold text-right pr-2">Export Area</div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+</div>
+<div class="grid grid-cols-4 gap-2 mb-1 items-center">
+<div class="font-bold text-right pr-2">South Area</div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+</div>
+<div class="grid grid-cols-4 gap-2 mb-1 items-center">
+<div class="font-bold text-right pr-2">West Area</div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+</div>
+<div class="grid grid-cols-4 gap-2 mb-4 items-center">
+<div class="font-bold text-right pr-2">North Area</div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+<div><input class="win-input w-full" type="text"/></div>
+</div>
+<div class="flex items-center gap-2 font-bold mb-4">
+                                Research Expenditure:(£'000) <input class="win-input w-16" type="text"/>
+</div>
+</div>
+</div>
+<hr class="border-gray-400 border-t-2"/>
+<div class="flex">
+<div class="w-1/2 pr-4">
+<div class="flex justify-between items-center mb-4 font-bold">
+<div>Salespeople<br/>Allocated to</div>
+<div class="text-center">Export<br/>Area<br/><input class="win-input w-10 mt-1" type="text"/></div>
+<div class="text-center">South<br/>Area<br/><input class="win-input w-10 mt-1" type="text"/></div>
+<div class="text-center">West<br/>Area<br/><input class="win-input w-10 mt-1" type="text"/></div>
+<div class="text-center">North<br/>Area<br/><input class="win-input w-10 mt-1" type="text"/></div>
+</div>
+<div class="flex justify-between items-center mb-2 font-bold">
+<div>Salespeople's<br/>Remuneration</div>
+<div class="text-right">Quarterly<br/>Salary:(£'00) <input class="win-input w-12 ml-1" type="text"/></div>
+<div class="text-right">% Sales<br/>Commission: <input class="win-input w-12 ml-1" type="text"/></div>
+</div>
+<div class="flex justify-between items-center mb-2 font-bold">
+<div>Assembly Workers'<br/>hourly wage rate:</div>
+<div class="flex items-center gap-1">(Pounds.Pence)<br/><input class="win-input w-8" type="text"/> . <input class="win-input w-8" type="text"/></div>
+<div>Shift level: <input class="win-input w-12 ml-1" type="text"/></div>
+</div>
+<div class="flex items-center gap-2 font-bold mb-2">
+                                Quarterly Management Budget:( £'000) <input class="win-input w-16" type="text"/>
+</div>
+<div class="flex justify-between items-center font-bold">
+<div>Contract Maintenance hours: <input class="win-input w-12 ml-1" type="text"/></div>
+<div>Machines to Sell: <input class="win-input w-12 ml-1" type="text"/></div>
+</div>
+</div>
+<div class="w-1/2 pl-4 border-l-2 border-gray-400 flex flex-col justify-end">
+<div class="flex gap-4 font-bold items-center mb-2">
+<div class="w-32">Salespeople</div>
+<div>Recruit <input class="win-input w-10" type="text"/></div>
+<div>Dismiss <input class="win-input w-10" type="text"/></div>
+<div>Train <input class="win-input w-10" type="text"/></div>
+</div>
+<div class="flex gap-4 font-bold items-center mb-6">
+<div class="w-32">Assembly Workers:</div>
+<div>Recruit <input class="win-input w-10" type="text"/></div>
+<div>Dismiss <input class="win-input w-10" type="text"/></div>
+<div>Train <input class="win-input w-10" type="text"/></div>
+</div>
+<div class="flex justify-between font-bold items-end mb-4 text-center">
+<div class="text-left">Raw Material:</div>
+<div>Units to Order<br/><input class="win-input w-20 mt-1" type="text"/></div>
+<div>Supplier No.<br/><input class="win-input w-12 mt-1" type="text"/></div>
+<div>No. of Deliveries<br/><input class="win-input w-12 mt-1" type="text"/></div>
+</div>
+<div class="flex justify-end items-center font-bold gap-2">
+                                New Machines to Order: <input class="win-input w-16" type="text"/>
+</div>
+</div>
+</div>
+</div>
+</fieldset>
+</div>
+</div>
+
+</body></html>

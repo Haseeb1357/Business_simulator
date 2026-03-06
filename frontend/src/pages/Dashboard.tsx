@@ -1,12 +1,8 @@
 import Sidebar from '../components/Sidebar';
 import { useSimulationStore } from '../store/simulationStore';
-import {
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-    PieChart, Pie, Cell, BarChart, Bar, ResponsiveContainer,
-} from 'recharts';
 import { useMemo } from 'react';
-
-const COLORS = ['#2563eb', '#059669', '#d97706', '#dc2626', '#7c3aed', '#0891b2', '#be123c', '#65a30d'];
+import { Activity, TrendingUp, AlertCircle, FileText, ChevronRight, CheckCircle } from 'lucide-react';
+import DecisionForm from './DecisionForm';
 
 const Dashboard = () => {
     const teams = useSimulationStore(s => s.teams);
@@ -14,194 +10,163 @@ const Dashboard = () => {
     const currentQuarter = useSimulationStore(s => s.currentQuarter);
     const gameStatus = useSimulationStore(s => s.gameStatus);
     const allResults = useSimulationStore(s => s.allResults);
+    const gameConfig = useSimulationStore(s => s.gameConfig);
+    const submittedTeams = useSimulationStore(s => s.submittedTeams);
 
     const activeTeam = teams.find(t => t.id === activeTeamId);
     const latestQ = currentQuarter - 1;
-    const ipoState = useSimulationStore.getState().getTeamIPOState(activeTeamId);
 
-    // Compute data from raw state
+    // Is the current team submitted?
+    const hasSubmitted = submittedTeams.has(activeTeamId);
+
+    // Compute data
     const history = useMemo(() => allResults.get(activeTeamId) || [], [allResults, activeTeamId]);
     const latest = history.length > 0 ? history[history.length - 1] : null;
 
-    const latestResults = useMemo(() => {
-        if (latestQ < 1) return [];
-        return teams.map(t => {
-            const res = allResults.get(t.id) || [];
-            return res.find(r => r.quarter === latestQ);
-        }).filter(Boolean) as any[];
-    }, [allResults, teams, latestQ]);
-
-    // Revenue trend data for line chart
-    const revenueTrend = useMemo(() => history.map(r => ({
-        quarter: `Q${r.quarter}`,
-        Revenue: r.kpis.totalRevenue,
-        'Net Profit': r.kpis.netProfit,
-    })), [history]);
-
-    // Market share pie data
-    const marketShareData = useMemo(() => latestResults.map((r: any, i: number) => ({
-        name: teams.find(t => t.id === r.teamId)?.name || `Team ${r.teamId}`,
-        value: Math.round(r.kpis.marketShare * 100) / 100,
-        fill: COLORS[i % COLORS.length],
-    })), [latestResults, teams]);
-
-    // Production bar data
-    const productionData = useMemo(() => latest ? [
-        { product: 'Product 1', Demand: latest.products.p1.demand, Produced: latest.products.p1.produced, Sold: latest.products.p1.sold },
-        { product: 'Product 2', Demand: latest.products.p2.demand, Produced: latest.products.p2.produced, Sold: latest.products.p2.sold },
-        { product: 'Product 3', Demand: latest.products.p3.demand, Produced: latest.products.p3.produced, Sold: latest.products.p3.sold },
-    ] : [], [latest]);
-
-    // Share price comparison
-    const sharePriceHistory = useMemo(() => {
-        const data: Record<string, any>[] = [];
-        for (let q = 1; q <= latestQ; q++) {
-            const point: Record<string, any> = { quarter: `Q${q}` };
-            teams.forEach(t => {
-                const res = allResults.get(t.id) || [];
-                const r = res.find(r => r.quarter === q);
-                point[t.name] = r?.kpis.sharePrice || 116;
-            });
-            data.push(point);
-        }
-        return data;
-    }, [allResults, teams, latestQ]);
-
-    const fmt = (n: number) => n >= 0 ? `$${n.toLocaleString()}` : `-$${Math.abs(n).toLocaleString()}`;
+    const fmt = (n: number | undefined) => {
+        if (n === undefined) return '—';
+        return n >= 0 ? `$${n.toLocaleString()}` : `-$${Math.abs(n).toLocaleString()}`;
+    };
 
     return (
-        <div className="flex h-screen overflow-hidden">
+        <div className="flex h-screen overflow-hidden bg-slate-50">
             <Sidebar />
-            <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden pt-16 lg:pt-0 lg:pl-72 bg-slate-50">
-                <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
+            <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden pt-16 lg:pt-0 lg:pl-72">
+                <main className="flex-1 p-4 lg:p-8 max-w-7xl mx-auto w-full space-y-8">
+
                     {/* Header */}
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 border-b border-slate-200 pb-4">
                         <div>
-                            <h1 className="text-2xl font-bold text-slate-800">Executive Dashboard</h1>
-                            <p className="text-slate-500">{activeTeam?.name} — Performance Overview</p>
+                            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Command Center</h1>
+                            <p className="text-slate-500 mt-1">{activeTeam?.name} <span className="text-slate-300 mx-2">|</span> Company {activeTeam?.companyNumber}</p>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 shadow-sm">
-                                <span className="text-xs text-slate-500">Quarter</span>
-                                <p className="text-sm font-bold text-primary-600">Q{currentQuarter} {currentQuarter <= 1 ? '(Start)' : ''}</p>
-                            </div>
-                            <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${gameStatus === 'inputting' ? 'bg-amber-100 text-amber-700' : gameStatus === 'processing' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                                {gameStatus.toUpperCase()}
+                        <div className="flex items-center gap-4">
+                            <div className="text-right">
+                                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Current Phase</span>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-lg font-bold text-primary-600">Quarter {currentQuarter}</span>
+                                    <span className={`px-2.5 py-1 text-xs font-bold rounded-full ${gameStatus === 'inputting' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-blue-100 text-blue-700 border border-blue-200'}`}>
+                                        {gameStatus === 'inputting' ? 'DECISION PHASE' : 'PROCESSING'}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* KPI Cards */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-                            <h3 className="text-xs text-slate-500 uppercase tracking-wider font-medium">Revenue</h3>
-                            <p className="text-2xl font-bold mt-1 text-slate-900">{latest ? fmt(latest.kpis.totalRevenue) : '—'}</p>
-                            {history.length > 1 && <p className={`text-xs mt-1 ${latest!.kpis.totalRevenue >= history[history.length - 2].kpis.totalRevenue ? 'text-emerald-500' : 'text-red-500'}`}>
-                                {latest!.kpis.totalRevenue >= history[history.length - 2].kpis.totalRevenue ? '▲' : '▼'} vs Q{currentQuarter - 2}
-                            </p>}
+                    {/* Section 1: Intelligence & History */}
+                    <section>
+                        <div className="flex items-center gap-2 mb-4">
+                            <Activity className="w-5 h-5 text-indigo-500" />
+                            <h2 className="text-lg font-semibold text-slate-800">Market Intelligence & News</h2>
                         </div>
-                        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-                            <h3 className="text-xs text-slate-500 uppercase tracking-wider font-medium">Net Profit</h3>
-                            <p className={`text-2xl font-bold mt-1 ${latest && latest.kpis.netProfit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                                {latest ? fmt(latest.kpis.netProfit) : '—'}
-                            </p>
-                        </div>
-                        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm relative overflow-hidden">
-                            <h3 className="text-xs text-slate-500 uppercase tracking-wider font-medium">Share Price</h3>
-                            {ipoState.isPublic ? (
-                                <>
-                                    <p className="text-2xl font-bold mt-1 text-primary-600">{latest ? `${latest.kpis.sharePrice}¢` : `${ipoState.sharePrice}¢`}</p>
-                                    <span className="absolute top-4 right-4 text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-200">PUBLIC</span>
-                                </>
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                            {gameConfig.news && gameConfig.news.length > 0 ? (
+                                <ul className="space-y-3">
+                                    {[...gameConfig.news].reverse().slice(0, 3).map((item, idx) => (
+                                        <li key={idx} className="flex gap-3 items-start text-sm">
+                                            <div className="mt-0.5 text-indigo-500"><AlertCircle className="w-4 h-4" /></div>
+                                            <span className="text-slate-700 leading-snug">{item}</span>
+                                        </li>
+                                    ))}
+                                </ul>
                             ) : (
-                                <>
-                                    <p className="text-2xl font-bold mt-1 text-slate-400">—</p>
-                                    <span className="absolute top-4 right-4 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">PRIVATE</span>
-                                </>
+                                <p className="text-sm text-slate-500 italic">No market news at this time. The economic environment is stable.</p>
                             )}
-                        </div>
-                        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-                            <h3 className="text-xs text-slate-500 uppercase tracking-wider font-medium">Market Share</h3>
-                            <p className="text-2xl font-bold mt-1 text-amber-600">{latest ? `${latest.kpis.marketShare}%` : '—'}</p>
-                        </div>
-                    </div>
-
-                    {latestQ < 1 ? (
-                        <div className="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-sm">
-                            <div className="text-6xl mb-4">📊</div>
-                            <h2 className="text-xl font-bold text-slate-800 mb-2">No Simulation Data Yet</h2>
-                            <p className="text-slate-500 max-w-md mx-auto">Submit your decisions and run the first quarter simulation from the Admin Control Panel to see charts and analytics here.</p>
-                        </div>
-                    ) : (
-                        <>
-                            {/* Revenue & Profit Trend */}
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                                <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                                    <h3 className="text-sm font-semibold text-slate-800 mb-4">Revenue & Profit Trend</h3>
-                                    <ResponsiveContainer width="100%" height={280}>
-                                        <LineChart data={revenueTrend}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                                            <XAxis dataKey="quarter" tick={{ fontSize: 12 }} />
-                                            <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
-                                            <Tooltip formatter={(v: number) => `$${v.toLocaleString()}`} />
-                                            <Legend />
-                                            <Line type="monotone" dataKey="Revenue" stroke="#2563eb" strokeWidth={2} dot={{ r: 4 }} />
-                                            <Line type="monotone" dataKey="Net Profit" stroke="#059669" strokeWidth={2} dot={{ r: 4 }} />
-                                        </LineChart>
-                                    </ResponsiveContainer>
+                            <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                <div>
+                                    <span className="text-slate-500 block text-xs mb-1">GDP Growth</span>
+                                    <span className="font-semibold text-slate-800">{gameConfig.gdpGrowth}%</span>
                                 </div>
-
-                                <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                                    <h3 className="text-sm font-semibold text-slate-800 mb-4">Market Share Distribution</h3>
-                                    {marketShareData.length > 0 ? (
-                                        <ResponsiveContainer width="100%" height={280}>
-                                            <PieChart>
-                                                <Pie data={marketShareData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label={({ name, value }) => `${name.split(' ')[0]}: ${value}%`}>
-                                                    {marketShareData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
-                                                </Pie>
-                                                <Tooltip />
-                                            </PieChart>
-                                        </ResponsiveContainer>
-                                    ) : <p className="text-slate-400 text-center py-20">Run simulation first</p>}
+                                <div>
+                                    <span className="text-slate-500 block text-xs mb-1">Inflation</span>
+                                    <span className="font-semibold text-slate-800">{gameConfig.inflationRate}%</span>
+                                </div>
+                                <div>
+                                    <span className="text-slate-500 block text-xs mb-1">Base Interest</span>
+                                    <span className="font-semibold text-slate-800">{gameConfig.interestRate}%</span>
+                                </div>
+                                <div>
+                                    <span className="text-slate-500 block text-xs mb-1">Material Cost</span>
+                                    <span className="font-semibold text-slate-800">${gameConfig.materialPrice}/unit</span>
                                 </div>
                             </div>
+                        </div>
+                    </section>
 
-                            {/* Production & Share Price */}
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                                <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                                    <h3 className="text-sm font-semibold text-slate-800 mb-4">Production vs Demand (Latest Quarter)</h3>
-                                    <ResponsiveContainer width="100%" height={280}>
-                                        <BarChart data={productionData}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                                            <XAxis dataKey="product" tick={{ fontSize: 12 }} />
-                                            <YAxis tick={{ fontSize: 11 }} />
-                                            <Tooltip />
-                                            <Legend />
-                                            <Bar dataKey="Demand" fill="#93c5fd" radius={[4, 4, 0, 0]} />
-                                            <Bar dataKey="Produced" fill="#2563eb" radius={[4, 4, 0, 0]} />
-                                            <Bar dataKey="Sold" fill="#059669" radius={[4, 4, 0, 0]} />
-                                        </BarChart>
-                                    </ResponsiveContainer>
+                    {/* Section 2: Current Performance (Latest Quarter) */}
+                    <section>
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                                <TrendingUp className="w-5 h-5 text-emerald-500" />
+                                <h2 className="text-lg font-semibold text-slate-800">Performance Summary (Q{latestQ})</h2>
+                            </div>
+                            <button className="text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1">
+                                View Full Report <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {latest ? (
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                                    <span className="text-xs font-medium text-slate-500 uppercase tracking-widest block mb-1">Revenue</span>
+                                    <span className="text-2xl font-bold text-slate-900">{fmt(latest.profitAndLoss.salesRevenue)}</span>
                                 </div>
-
-                                <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                                    <h3 className="text-sm font-semibold text-slate-800 mb-4">Share Price Trends (All Teams)</h3>
-                                    <ResponsiveContainer width="100%" height={280}>
-                                        <LineChart data={sharePriceHistory}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                                            <XAxis dataKey="quarter" tick={{ fontSize: 11 }} />
-                                            <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}p`} />
-                                            <Tooltip />
-                                            <Legend wrapperStyle={{ fontSize: 11 }} />
-                                            {teams.map((t, i) => (
-                                                <Line key={t.id} dataKey={t.name} stroke={COLORS[i % COLORS.length]} strokeWidth={1.5} dot={false} />
-                                            ))}
-                                        </LineChart>
-                                    </ResponsiveContainer>
+                                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                                    <span className="text-xs font-medium text-slate-500 uppercase tracking-widest block mb-1">Net Profit</span>
+                                    <span className={`text-2xl font-bold ${latest.kpis.netProfit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                                        {fmt(latest.kpis.netProfit)}
+                                    </span>
+                                </div>
+                                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 relative">
+                                    <span className="text-xs font-medium text-slate-500 uppercase tracking-widest block mb-1">Market Share</span>
+                                    <span className="text-2xl font-bold text-amber-600">{latest.kpis.marketShare.toFixed(1)}%</span>
+                                </div>
+                                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                                    <span className="text-xs font-medium text-slate-500 uppercase tracking-widest block mb-1">Company Value</span>
+                                    <span className="text-2xl font-bold text-primary-600">£{fmt(latest.kpis.companyValue)}</span>
                                 </div>
                             </div>
-                        </>
-                    )}
+                        ) : (
+                            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center bg-slate-50/50">
+                                <div className="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <FileText className="w-6 h-6 text-slate-400" />
+                                </div>
+                                <h3 className="text-slate-700 font-medium">No Historical Data</h3>
+                                <p className="text-slate-500 text-sm mt-1">Run Quarter 1 to generate your first set of management reports.</p>
+                            </div>
+                        )}
+                    </section>
+
+                    {/* Section 3: Decision Entry */}
+                    <section>
+                        <div className="flex items-center gap-2 mb-4">
+                            <FileText className="w-5 h-5 text-primary-500" />
+                            <h2 className="text-lg font-semibold text-slate-800">Quarter {currentQuarter} Decisions</h2>
+                        </div>
+
+                        {gameStatus !== 'inputting' ? (
+                            <div className="bg-white rounded-xl border border-blue-200 p-8 text-center bg-blue-50/50 shadow-sm">
+                                <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                                </div>
+                                <h3 className="text-blue-900 font-bold text-lg">Simulation Running</h3>
+                                <p className="text-blue-700 text-sm mt-1">Please wait for the administrator to finish processing the quarter.</p>
+                            </div>
+                        ) : hasSubmitted ? (
+                            <div className="bg-white rounded-xl border border-emerald-200 p-8 text-center bg-emerald-50/50 shadow-sm">
+                                <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <CheckCircle className="w-6 h-6" />
+                                </div>
+                                <h3 className="text-emerald-900 font-bold text-lg">Decisions Submitted</h3>
+                                <p className="text-emerald-700 text-sm mt-1">Waiting for other teams and the administrator to run the quarter.</p>
+                            </div>
+                        ) : (
+                            <div className="mt-4">
+                                <DecisionForm embedded={true} />
+                            </div>
+                        )}
+                    </section>
+
                 </main>
             </div>
         </div>

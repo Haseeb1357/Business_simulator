@@ -3,18 +3,15 @@ import Sidebar from '../components/Sidebar';
 import { useSimulationStore } from '../store/simulationStore';
 import { ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 import {
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+    XAxis, YAxis, CartesianGrid, Tooltip,
     BarChart, Bar, ResponsiveContainer,
 } from 'recharts';
-
-const COLORS = ['#2563eb', '#059669', '#d97706', '#dc2626', '#7c3aed', '#0891b2', '#be123c', '#65a30d'];
 
 const Leaderboard = () => {
     const teams = useSimulationStore(s => s.teams);
     const currentQuarter = useSimulationStore(s => s.currentQuarter);
     const allResults = useSimulationStore(s => s.allResults);
     const activeTeamId = useSimulationStore(s => s.activeTeamId);
-    const getTeamIPOState = useSimulationStore.getState().getTeamIPOState;
 
     const [activeTab, setActiveTab] = useState('ranking');
     const latestQ = currentQuarter - 1;
@@ -25,33 +22,15 @@ const Leaderboard = () => {
             const results = allResults.get(t.id) || [];
             const latest = results.find(r => r.quarter === latestQ);
             const prev = results.find(r => r.quarter === latestQ - 1);
-            const ipoState = getTeamIPOState(t.id);
             return {
                 ...t,
                 netProfit: latest?.kpis.netProfit || 0,
-                sharePrice: latest ? latest.kpis.sharePrice : ipoState.sharePrice,
                 marketShare: latest?.kpis.marketShare || 0,
-                companyValue: latest?.kpis.companyValue || (ipoState.isPublic ? ipoState.sharesIssued * ipoState.sharePrice : 2000000),
-                totalRevenue: latest?.kpis.totalRevenue || 0,
-                prevCompanyValue: prev?.kpis.companyValue || 2000000,
-                isPublic: ipoState.isPublic,
+                companyValue: latest?.kpis.companyValue || 0,
+                prevCompanyValue: prev?.kpis.companyValue || 0,
             };
         }).sort((a, b) => b.companyValue - a.companyValue);
-    }, [teams, allResults, latestQ, getTeamIPOState]);
-
-    // Share price history for line chart
-    const sharePriceHistory = useMemo(() => {
-        const data: Record<string, any>[] = [];
-        for (let q = 1; q <= latestQ; q++) {
-            const point: Record<string, any> = { quarter: `Q${q}` };
-            teams.forEach(t => {
-                const r = (allResults.get(t.id) || []).find(r => r.quarter === q);
-                point[t.name] = r?.kpis.sharePrice || 116; // Legacy default
-            });
-            data.push(point);
-        }
-        return data;
-    }, [allResults, teams, latestQ]);
+    }, [teams, allResults, latestQ]);
 
     // Company value bar chart
     const companyValueData = useMemo(() => rankings.map(r => ({
@@ -113,7 +92,6 @@ const Leaderboard = () => {
                                                 <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase">Revenue</th>
                                                 <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase">Net Profit</th>
                                                 <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase">Market Share</th>
-                                                <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase">Share Price</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-200">
@@ -132,14 +110,10 @@ const Leaderboard = () => {
                                                         {r.id === activeTeamId && <span className="ml-2 text-xs text-primary-600 font-medium">(You)</span>}
                                                     </td>
                                                     <td className="px-4 py-3 text-right tabular-nums font-medium">${(r.companyValue / 1000000).toFixed(2)}M</td>
-                                                    <td className="px-4 py-3 text-right tabular-nums">{fmt(r.totalRevenue)}</td>
                                                     <td className={`px-4 py-3 text-right tabular-nums font-medium ${r.netProfit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                                                         {fmt(r.netProfit)}
                                                     </td>
                                                     <td className="px-4 py-3 text-right tabular-nums">{r.marketShare.toFixed(1)}%</td>
-                                                    <td className="px-4 py-3 text-right tabular-nums font-bold text-primary-600">
-                                                        {r.isPublic ? `${r.sharePrice}¢` : <span className="text-slate-400 font-normal">—</span>}
-                                                    </td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -148,30 +122,15 @@ const Leaderboard = () => {
                             )}
 
                             {activeTab === 'charts' && (
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 gap-6">
                                     <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                                        <h3 className="text-sm font-semibold text-slate-800 mb-4">Share Price Trends</h3>
-                                        <ResponsiveContainer width="100%" height={300}>
-                                            <LineChart data={sharePriceHistory}>
-                                                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                                                <XAxis dataKey="quarter" tick={{ fontSize: 11 }} />
-                                                <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${v}p`} />
-                                                <Tooltip />
-                                                <Legend wrapperStyle={{ fontSize: 11 }} />
-                                                {teams.map((t, i) => (
-                                                    <Line key={t.id} dataKey={t.name} stroke={COLORS[i % COLORS.length]} strokeWidth={1.5} dot={false} />
-                                                ))}
-                                            </LineChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                    <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                                        <h3 className="text-sm font-semibold text-slate-800 mb-4">Company Value ($'000)</h3>
+                                        <h3 className="text-sm font-semibold text-slate-800 mb-4">Company Value (£'000)</h3>
                                         <ResponsiveContainer width="100%" height={300}>
                                             <BarChart data={companyValueData}>
                                                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                                                 <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                                                <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `$${v}k`} />
-                                                <Tooltip formatter={(v: number) => `$${v}k`} />
+                                                <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `£${v}k`} />
+                                                <Tooltip formatter={(v: number) => `£${v}k`} />
                                                 <Bar dataKey="value" fill="#2563eb" radius={[4, 4, 0, 0]} />
                                             </BarChart>
                                         </ResponsiveContainer>

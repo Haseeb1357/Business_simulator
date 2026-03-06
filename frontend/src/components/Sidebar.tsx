@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useSimulationStore } from '../store/simulationStore';
 import {
-    LayoutDashboard, BarChart2, FileText, Activity, Trophy,
-    Users, Package, Settings, Menu, X
+    LayoutDashboard, Trophy,
+    Settings, Menu, X, FileText, Users
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -13,16 +13,13 @@ const Sidebar = () => {
     const activeTeam = teams.find(t => t.id === activeTeamId);
 
     const navItems = [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-        { name: 'Decision Input', href: '/decisions', icon: BarChart2 },
-        { name: 'Reports & P&L', href: '/reports', icon: FileText },
-        { name: 'Market Intelligence', href: '/intelligence', icon: Activity },
+        { name: 'Command Center', href: '/dashboard', icon: LayoutDashboard },
+        { name: 'Reports', href: '/reports', icon: FileText },
         { name: 'Leaderboard', href: '/leaderboard', icon: Trophy },
+        { name: 'Team Management', href: '/admin/teams', icon: Users },
     ];
 
     const adminItems = [
-        { name: 'Teams Management', href: '/admin/teams', icon: Users },
-        { name: 'Products & Environment', href: '/admin/setup', icon: Package },
         { name: 'Simulation Control', href: '/admin/control', icon: Settings },
     ];
 

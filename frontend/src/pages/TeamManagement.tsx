@@ -17,8 +17,6 @@ const TeamManagement = () => {
             rank: 0,
             profit: latest?.kpis.netProfit || 0,
             share: latest?.kpis.marketShare || 0,
-            sharePrice: latest?.kpis.sharePrice || 116,
-            employees: latest?.kpis.employees || 92,
         };
     }).sort((a, b) => (b.profit) - (a.profit));
 
@@ -44,10 +42,8 @@ const TeamManagement = () => {
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Team</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Company</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Employees</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Rank</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Net Profit</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Share Price</th>
                                     <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
@@ -63,12 +59,10 @@ const TeamManagement = () => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">Company {team.companyNumber}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{team.employees}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-700">#{team.rank}</td>
                                         <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${team.profit < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
                                             {latestQ > 0 ? fmt(team.profit) : '—'}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-primary-600">{team.sharePrice}¢</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                                             <button onClick={() => setActiveTeam(team.id)}
                                                 className={`font-medium mr-3 ${team.id === activeTeamId ? 'text-emerald-600' : 'text-primary-600 hover:text-primary-900'}`}>

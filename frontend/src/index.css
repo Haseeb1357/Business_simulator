@@ -14,6 +14,12 @@
   --color-secondary-100: #f1f5f9;
   --color-secondary-500: #64748b;
   --color-secondary-900: #0f172a;
+  
+  --color-win-gray: #c0c0c0;
+  --color-win-dark-gray: #808080;
+  --color-win-blue: #000080;
+  --color-win-cyan: #00ffff;
+  --color-win-peach: #ffdead;
 }
 
 body {
@@ -44,3 +50,44 @@ textarea:focus {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #f1f5f9; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+/* Windows 95 UI Utilities for Topaz Decision Form */
+.win-border-outset {
+    border: 2px solid;
+    border-top-color: #ffffff;
+    border-left-color: #ffffff;
+    border-right-color: #808080;
+    border-bottom-color: #808080;
+}
+.win-border-inset {
+    border: 2px solid;
+    border-top-color: #808080;
+    border-left-color: #808080;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+}
+.win-fieldset {
+    border: 2px groove #ffffff;
+    padding: 8px;
+    margin-top: 8px;
+}
+.win-legend {
+    font-weight: bold;
+    padding: 0 4px;
+}
+.win-input {
+    border: 2px solid !important;
+    border-top-color: #808080 !important;
+    border-left-color: #808080 !important;
+    border-right-color: #ffffff !important;
+    border-bottom-color: #ffffff !important;
+    padding: 2px 4px !important;
+    height: 24px !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    font-size: 13px !important;
+}
+.win-input:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}

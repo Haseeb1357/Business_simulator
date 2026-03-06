@@ -3,92 +3,159 @@
 // Multi-product demand, production, and financial model
 // ============================================================
 
-// ---- Type Definitions ----
+// ---- Type Definitions for Topaz VBE ----
 
-export interface ProductPrices {
-    home: number;
-    export: number;
-}
-
-export interface ProductAdvertising {
-    trade: number;
-    press_tv: number;
-    merchandising: number;
-}
-
+// 1. INPUT DECISIONS (The Form)
 export interface TeamDecision {
-    prices: { p1: ProductPrices; p2: ProductPrices; p3: ProductPrices };
-    advertising: { p1: ProductAdvertising; p2: ProductAdvertising; p3: ProductAdvertising };
-    rawMaterialOrder: number;       // thousands of units
-    shiftLevel: number;             // 1 = normal, 2 = overtime, 3 = double
-    maintenanceHours: number;       // quarterly
-    machinePurchase: number;        // number of new machines ($100k each)
-    recruitWorkers: number;
-    dismissWorkers: number;
-    trainWorkers: number;
-    dividendCents: number;          // cents per share (only relevant if public)
-    managementBudgetK: number;      // thousands
-    loanRequest: number;            // thousands
-    rdSpend: number;                // thousands
-    // IPO fields
-    launchIPO: boolean;             // true = team wants to go public this quarter
-    ipoSharePrice: number;          // initial share price in dollars
-    ipoSharesIssued: number;        // number of shares to issue
+    companyInfo: {
+        simulationCode: string;
+        year: string;
+        quarter: string;
+        groupNumber: string;
+        companyNumber: string;
+        identityNumber: string;
+        status: string;
+    };
+    productImprovements: [boolean, boolean, boolean];
+    prices: {
+        exportMarket: [number, number, number];
+        homeMarkets: [number, number, number];
+    };
+    promotion: {
+        tradePress: [number, number, number];
+        advertisingSupport: [number, number, number];
+        merchandising: [number, number, number];
+    };
+    assemblyTime: [number, number, number];
+    dividendRate: number;
+    daysCreditAllowed: number;
+    vansToBuy: number;
+    vansToSell: number;
+    informationWanted: {
+        otherCompanies: boolean;
+        marketShares: boolean;
+    };
+    deliveries: {
+        exportArea: [number, number, number];
+        southArea: [number, number, number];
+        westArea: [number, number, number];
+        northArea: [number, number, number];
+    };
+    researchExpenditure: number;
+    salesforceAllocated: {
+        exportArea: number;
+        southArea: number;
+        westArea: number;
+        northArea: number;
+    };
+    salesforceRemuneration: {
+        quarterlySalary: number;
+        commission: number;
+    };
+    assemblyWorkersWage: {
+        pounds: number;
+        pence: number;
+    };
+    shiftLevel: number;
+    managementBudget: number;
+    contractMaintenanceHours: number;
+    machinesToSell: number;
+    salesforce: {
+        recruit: number;
+        dismiss: number;
+        train: number;
+    };
+    assemblyWorkers: {
+        recruit: number;
+        dismiss: number;
+        train: number;
+    };
+    rawMaterial: {
+        unitsToOrder: number;
+        supplierNo: number;
+        deliveries: number;
+    };
+    newMachinesToOrder: number;
 }
 
-export interface IPOState {
-    isPublic: boolean;
-    sharePrice: number;             // current share price (0 if private)
-    sharesIssued: number;           // total shares outstanding (0 if private)
-    ipoQuarter: number | null;      // quarter when IPO happened
+// 2. CARRY FORWARD INTERNAL STATE (For tracking between quarters)
+export interface TopazInventory {
+    finishedGoods: number;
+    componentA: number;
+    componentB: number;
+    rawMaterials: number;
 }
 
-export interface ProductResult {
-    demand: number;
-    produced: number;
-    sold: number;
-    revenue: number;
-    rejected: number;
-    closingStock: number;
-    openingStock: number;
+export interface TopazStaffing {
+    productionWorkers: number;
+    adminStaff: number;
+    salesStaff: number;
+    productionSkillLevel: number;
+    salesSkillLevel: number;
 }
 
-export interface ProfitAndLoss {
+export interface TopazAssets {
+    plantUnits: number;
+    machines: number;
+    vehicles: number;
+    plantValue: number;
+    machinesValue: number;
+    vehiclesValue: number;
+}
+
+export interface TeamCarryForward {
+    inventory: TopazInventory;
+    staffing: TopazStaffing;
+    assets: TopazAssets;
+
+    // Financial history
+    cash: number;
+    overdraft: number;
+    fixedTermLoans: number;
+    retainedProfit: number;
+    shareCapital: number;
+
+    // Prior quarter tracking
+    lastQuarterTaxOwed: number;
+    lastQuarterRDCumulative: number;
+}
+
+// 3. OUTPUT REPORT (What the user sees after execution)
+export interface TopazProfitAndLoss {
     salesRevenue: number;
     openingStockValue: number;
     materialsPurchased: number;
-    assemblyWages: number;
-    machinistWages: number;
-    machineRunningCosts: number;
-    lessClosingStockValue: number;
-    costOfSales: number;
-    grossProfit: number;
-    advertisingCost: number;
-    salesExpenses: number;
-    managementSalaries: number;
-    maintenanceCosts: number;
+    productionWages: number;
     depreciation: number;
-    otherOverheads: number;
-    totalOverheads: number;
-    operatingProfit: number;
+    lessClosingStockValue: number;
+    costOfGoodsSold: number;
+    grossProfit: number;
+
+    advertisingCost: number;
+    salesForceCost: number;
+    commissionCost: number;
+    adminSalaries: number;
+    qcCost: number;
+    rdCost: number;
     interestPaid: number;
-    netProfitBeforeTax: number;
+    totalOverheads: number;
+
+    operatingProfit: number;
     tax: number;
     netProfit: number;
     dividendPaid: number;
     retainedProfit: number;
 }
 
-export interface BalanceSheet {
+export interface TopazBalanceSheet {
     fixedAssets: {
-        property: number;
-        machinery: number;
+        plant: number;
+        machines: number;
         vehicles: number;
         totalFixed: number;
     };
     currentAssets: {
-        productStock: number;
-        materialStock: number;
+        stockValuation: number;
         debtors: number;
         cash: number;
         totalCurrent: number;
@@ -112,169 +179,205 @@ export interface BalanceSheet {
     };
 }
 
-export interface CashFlow {
-    tradingReceipts: number;
-    tradingPayments: number;
-    operatingCashFlow: number;
-    capitalExpenditure: number;
-    investingCashFlow: number;
-    loanReceipts: number;
-    interestPaid: number;
-    dividendPaid: number;
-    financingCashFlow: number;
-    netCashFlow: number;
-    openingBalance: number;
-    closingBalance: number;
+export interface TopazProductStats {
+    potentialSalesArea1: number;
+    actualSalesArea1: number;
+    potentialSalesArea2: number;
+    actualSalesArea2: number;
+    marketSharePercent: number;
+    qualityRatingPercent: number;
+    defectsPercent: number;
 }
 
 export interface TeamQuarterResult {
     teamId: number;
     quarter: number;
-    products: { p1: ProductResult; p2: ProductResult; p3: ProductResult };
-    profitAndLoss: ProfitAndLoss;
-    balanceSheet: BalanceSheet;
-    cashFlow: CashFlow;
+    decisions: TeamDecision;
+    previousCarryForward: TeamCarryForward;
+    carryForward: TeamCarryForward;
+    stats: TopazProductStats;
+    profitAndLoss: TopazProfitAndLoss;
+    balanceSheet: TopazBalanceSheet;
     kpis: {
         netProfit: number;
-        sharePrice: number;
         marketShare: number;
         companyValue: number;
-        totalRevenue: number;
-        employees: number;
     };
 }
 
+// 4. GAME CONFIG (System variables)
 export interface GameConfig {
     gdpGrowth: number;
     interestRate: number;
     inflationRate: number;
-    materialPrice: number;   // per 1000 units
+    materialPrice: number;
     unemploymentRate: number;
     marketGrowthFactor: number;
+    news: string[]; // Global news string array
 }
-
-// ---- Product Defaults ----
-
-const PRODUCT_DEFAULTS = {
-    p1: {
-        defaultHomePrice: 150, defaultExportPrice: 170,
-        baseDemandHome: 3700, baseDemandExport: 1800,
-        assemblyMinutes: 118, materialCostPerUnit: 40,
-        elasticity: 1.5, qualityFactor: 1.0,
-    },
-    p2: {
-        defaultHomePrice: 270, defaultExportPrice: 290,
-        baseDemandHome: 2025, baseDemandExport: 980,
-        assemblyMinutes: 165, materialCostPerUnit: 75,
-        elasticity: 1.3, qualityFactor: 1.0,
-    },
-    p3: {
-        defaultHomePrice: 550, defaultExportPrice: 580,
-        baseDemandHome: 900, baseDemandExport: 450,
-        assemblyMinutes: 330, materialCostPerUnit: 150,
-        elasticity: 1.1, qualityFactor: 1.0,
-    },
-};
 
 // ---- Default Decision ----
 
 export function getDefaultDecision(): TeamDecision {
     return {
+        companyInfo: {
+            simulationCode: "Topaz",
+            year: "1",
+            quarter: "1",
+            groupNumber: "1",
+            companyNumber: "1",
+            identityNumber: "0",
+            status: "2"
+        },
+        productImprovements: [false, false, false],
         prices: {
-            p1: { home: 150, export: 170 },
-            p2: { home: 270, export: 290 },
-            p3: { home: 550, export: 580 },
+            exportMarket: [0, 0, 0],
+            homeMarkets: [15, 18, 0]
         },
-        advertising: {
-            p1: { trade: 10, press_tv: 12, merchandising: 8 },
-            p2: { trade: 10, press_tv: 14, merchandising: 8 },
-            p3: { trade: 18, press_tv: 20, merchandising: 10 },
+        promotion: {
+            tradePress: [5, 5, 0],
+            advertisingSupport: [50, 30, 0],
+            merchandising: [10, 10, 0]
         },
-        rawMaterialOrder: 12,
+        assemblyTime: [30, 45, 0],
+        dividendRate: 0,
+        daysCreditAllowed: 30,
+        vansToBuy: 0,
+        vansToSell: 0,
+        informationWanted: {
+            otherCompanies: false,
+            marketShares: false
+        },
+        deliveries: {
+            exportArea: [0, 0, 0],
+            southArea: [10000, 5000, 0],
+            westArea: [5000, 2000, 0],
+            northArea: [5000, 2000, 0]
+        },
+        researchExpenditure: 15,
+        salesforceAllocated: {
+            exportArea: 0,
+            southArea: 4,
+            westArea: 3,
+            northArea: 3
+        },
+        salesforceRemuneration: {
+            quarterlySalary: 80,
+            commission: 5
+        },
+        assemblyWorkersWage: {
+            pounds: 10,
+            pence: 50
+        },
         shiftLevel: 1,
-        maintenanceHours: 50,
-        machinePurchase: 0,
-        recruitWorkers: 0,
-        dismissWorkers: 0,
-        trainWorkers: 0,
-        dividendCents: 0,
-        managementBudgetK: 120,
-        loanRequest: 0,
-        rdSpend: 50,
-        launchIPO: false,
-        ipoSharePrice: 0,
-        ipoSharesIssued: 0,
+        managementBudget: 50,
+        contractMaintenanceHours: 40,
+        machinesToSell: 0,
+        salesforce: { recruit: 0, dismiss: 0, train: 0 },
+        assemblyWorkers: { recruit: 0, dismiss: 0, train: 5 },
+        rawMaterial: { unitsToOrder: 50000, supplierNo: 1, deliveries: 1 },
+        newMachinesToOrder: 0
     };
 }
-
-// ---- Randomize Decision ----
 
 function randBetween(min: number, max: number): number {
     return Math.round(min + Math.random() * (max - min));
 }
 
 export function randomizeDecision(): TeamDecision {
-    return {
-        prices: {
-            p1: { home: randBetween(120, 185), export: randBetween(140, 210) },
-            p2: { home: randBetween(220, 340), export: randBetween(240, 360) },
-            p3: { home: randBetween(440, 680), export: randBetween(470, 720) },
-        },
-        advertising: {
-            p1: { trade: randBetween(5, 20), press_tv: randBetween(5, 25), merchandising: randBetween(3, 15) },
-            p2: { trade: randBetween(5, 20), press_tv: randBetween(8, 28), merchandising: randBetween(3, 15) },
-            p3: { trade: randBetween(10, 30), press_tv: randBetween(12, 35), merchandising: randBetween(5, 20) },
-        },
-        rawMaterialOrder: randBetween(8, 18),
-        shiftLevel: randBetween(1, 2),
-        maintenanceHours: randBetween(30, 80),
-        machinePurchase: Math.random() > 0.7 ? randBetween(1, 3) : 0,
-        recruitWorkers: randBetween(0, 10),
-        dismissWorkers: Math.random() > 0.8 ? randBetween(1, 5) : 0,
-        trainWorkers: randBetween(0, 8),
-        dividendCents: randBetween(0, 8),
-        managementBudgetK: randBetween(80, 180),
-        loanRequest: Math.random() > 0.7 ? randBetween(50, 300) : 0,
-        rdSpend: randBetween(20, 100),
-        launchIPO: false,
-        ipoSharePrice: 0,
-        ipoSharesIssued: 0,
-    };
+    const def = getDefaultDecision();
+    def.prices.homeMarkets = [randBetween(12, 20), randBetween(15, 25), 0];
+    def.promotion.advertisingSupport = [randBetween(20, 80), randBetween(10, 50), 0];
+    def.deliveries.southArea = [randBetween(5000, 15000), randBetween(2000, 8000), 0];
+    def.rawMaterial.unitsToOrder = randBetween(30000, 80000);
+    def.salesforceRemuneration.commission = randBetween(2, 8);
+    def.researchExpenditure = randBetween(5, 30);
+    return def;
 }
 
 // ---- Previous Quarter State (carry forward) ----
 
-export interface TeamCarryForward {
-    cash: number;
-    machines: number;           // net book value
-    machineCapacityHours: number;
-    employees: number;          // assembly workers
-    productStock: { p1: number; p2: number; p3: number };
-    materialStock: number;
-    loans: number;
-    reserves: number;
-    ipoState: IPOState;
-    cumulativeProfit: number;
-    trainedWorkers: number;
-}
-
 export function getInitialCarryForward(): TeamCarryForward {
     return {
-        cash: 50000,
-        machines: 1594818,
-        machineCapacityHours: 10920,
-        employees: 92,
-        productStock: { p1: 200, p2: 100, p3: 50 },
-        materialStock: 5000,
-        loans: 0,
-        reserves: 0,
-        ipoState: { isPublic: false, sharePrice: 0, sharesIssued: 0, ipoQuarter: null },
-        cumulativeProfit: 0,
-        trainedWorkers: 0,
+        inventory: {
+            finishedGoods: 5000,
+            componentA: 2000,
+            componentB: 1000,
+            rawMaterials: 15000
+        },
+        staffing: {
+            productionWorkers: 100,
+            adminStaff: 10,
+            salesStaff: 12,
+            productionSkillLevel: 1.0,
+            salesSkillLevel: 1.0
+        },
+        assets: {
+            plantUnits: 2,
+            machines: 50,
+            vehicles: 5,
+            plantValue: 2000000,
+            machinesValue: 500000,
+            vehiclesValue: 100000
+        },
+        cash: 250000,
+        overdraft: 0,
+        fixedTermLoans: 0,
+        retainedProfit: 0,
+        shareCapital: 1000000, // E.g., 1 million shares at $1
+        lastQuarterTaxOwed: 0,
+        lastQuarterRDCumulative: 0
     };
 }
 
 // ---- MAIN SIMULATION FUNCTION ----
+
+// Helper to map code.html form inputs to internal math variables
+function mapDecision(inputDec: TeamDecision) {
+    return {
+        marketing: {
+            area1Price: inputDec.prices.homeMarkets[0] || 15,
+            area2Price: inputDec.prices.exportMarket[0] || 18,
+            area1Advertising: inputDec.promotion.advertisingSupport[0] || 50,
+            area2Advertising: inputDec.promotion.tradePress[0] || 30,
+            salesForce: inputDec.salesforceAllocated.southArea + inputDec.salesforceAllocated.exportArea,
+            commissionRate: inputDec.salesforceRemuneration.commission || 5
+        },
+        operations: {
+            materialsOrdered: inputDec.rawMaterial.unitsToOrder || 50000,
+            productionTarget: (inputDec.deliveries.southArea[0] || 0) + (inputDec.deliveries.exportArea[0] || 0),
+            componentAUsage: 10000,
+            componentBUsage: 5000,
+            qcSpend: inputDec.researchExpenditure || 15
+        },
+        hr: {
+            productionWorkersTrained: inputDec.assemblyWorkers.train || 0,
+            productionWorkersRecruited: inputDec.assemblyWorkers.recruit || 0,
+            productionWorkersDismissed: inputDec.assemblyWorkers.dismiss || 0,
+            adminStaffRecruited: 0,
+            adminStaffDismissed: 0,
+            salesStaffRecruited: inputDec.salesforce.recruit || 0
+        },
+        infrastructure: {
+            buyPlant: 0,
+            sellPlant: 0,
+            buyMachines: inputDec.newMachinesToOrder || 0,
+            sellMachines: inputDec.machinesToSell || 0,
+            buyVehicles: inputDec.vansToBuy || 0,
+            sellVehicles: inputDec.vansToSell || 0
+        },
+        finance: {
+            fixedTermLoanRequest: 0,
+            dividendCents: inputDec.dividendRate || 0
+        },
+        rd: {
+            rdClass1: inputDec.productImprovements[0] ? 10 : 0,
+            rdClass2: inputDec.productImprovements[1] ? 10 : 0,
+            rdClass3: 5,
+            rdClass4: 5
+        }
+    };
+}
 
 export function processQuarterSimulation(
     decisions: Map<number, TeamDecision>,
@@ -285,324 +388,344 @@ export function processQuarterSimulation(
 ): { results: Map<number, TeamQuarterResult>; newCarryForwards: Map<number, TeamCarryForward> } {
 
     const numTeams = teamIds.length;
-    const gdpMult = 1 + (config.gdpGrowth / 100);
-    const inflMult = 1 + (config.inflationRate / 100);
 
-    // 1. Calculate industry average prices for demand model
-    const avgPrices = { p1: { home: 0, export: 0 }, p2: { home: 0, export: 0 }, p3: { home: 0, export: 0 } };
-    const totalAdv = { p1: 0, p2: 0, p3: 0 };
+    // 1. Calculate industry averages for competitive demand
+    let totalArea1Price = 0;
+    let totalArea2Price = 0;
+    let totalArea1Adv = 0;
+    let totalArea2Adv = 0;
+    let totalPDRD = 0; // Product R&D affects quality
 
     for (const tid of teamIds) {
-        const dec = decisions.get(tid)!;
-        for (const pk of ['p1', 'p2', 'p3'] as const) {
-            avgPrices[pk].home += dec.prices[pk].home;
-            avgPrices[pk].export += dec.prices[pk].export;
-            const a = dec.advertising[pk];
-            totalAdv[pk] += a.trade + a.press_tv + a.merchandising;
-        }
+        const dec = mapDecision(decisions.get(tid)!);
+        totalArea1Price += dec.marketing.area1Price;
+        totalArea2Price += dec.marketing.area2Price;
+        totalArea1Adv += dec.marketing.area1Advertising;
+        totalArea2Adv += dec.marketing.area2Advertising;
+        totalPDRD += dec.rd.rdClass2;
     }
-    for (const pk of ['p1', 'p2', 'p3'] as const) {
-        avgPrices[pk].home /= numTeams;
-        avgPrices[pk].export /= numTeams;
-    }
+
+    const avgArea1Price = totalArea1Price / numTeams;
+    const avgArea2Price = totalArea2Price / numTeams;
+    const avgArea1Adv = totalArea1Adv / numTeams;
+    const avgArea2Adv = totalArea2Adv / numTeams;
+    const avgPDRD = totalPDRD / numTeams;
 
     // 2. Process each team
     const results = new Map<number, TeamQuarterResult>();
     const newCarryForwards = new Map<number, TeamCarryForward>();
-    const teamRevenues: number[] = [];
 
     for (const tid of teamIds) {
-        const dec = decisions.get(tid)!;
+        const dec = mapDecision(decisions.get(tid)!);
         const prev = carryForwards.get(tid)!;
 
-        // ---- WORKFORCE ----
-        let employees = prev.employees + dec.recruitWorkers - dec.dismissWorkers;
-        employees = Math.max(20, employees);
-        const recruitCost = dec.recruitWorkers * 800;
-        const dismissCost = dec.dismissWorkers * 1200;
-        const trainCost = dec.trainWorkers * 500;
-        const trainedPct = Math.min(1, (prev.trainedWorkers + dec.trainWorkers) / employees);
-        const productivityBonus = 1 + trainedPct * 0.15; // up to 15% bonus
+        // --- A. STAFFING & HR ---
+        const prodWorkers = prev.staffing.productionWorkers + dec.hr.productionWorkersRecruited - dec.hr.productionWorkersDismissed;
+        const adminStaff = prev.staffing.adminStaff + dec.hr.adminStaffRecruited - dec.hr.adminStaffDismissed;
+        const salesStaff = prev.staffing.salesStaff + dec.hr.salesStaffRecruited; // Simplification, no dismissal for sales in this model
 
-        // ---- MACHINES ----
-        const newMachineCost = dec.machinePurchase * 100000;
-        const depreciationRate = 0.03;
-        const machineValue = prev.machines + newMachineCost;
-        const depreciation = Math.round(machineValue * depreciationRate);
-        const machineCapHours = prev.machineCapacityHours + dec.machinePurchase * 1200;
+        // Skill level evolution (R&D Training class 4 and HR training)
+        const newProdSkill = Math.min(1.5, prev.staffing.productionSkillLevel + (dec.hr.productionWorkersTrained * 0.01) + (dec.rd.rdClass4 * 0.005));
+        const newSalesSkill = Math.min(1.5, prev.staffing.salesSkillLevel + (dec.rd.rdClass4 * 0.005));
 
-        // ---- SHIFT LEVEL ----
-        const shiftMultiplier = dec.shiftLevel === 1 ? 1.0 : dec.shiftLevel === 2 ? 1.35 : 1.6;
-        const shiftCostMultiplier = dec.shiftLevel === 1 ? 1.0 : dec.shiftLevel === 2 ? 1.5 : 2.0;
+        // --- B. ASSETS & INFRASTRUCTURE ---
+        const plantUnits = prev.assets.plantUnits + dec.infrastructure.buyPlant - dec.infrastructure.sellPlant;
+        const machines = prev.assets.machines + dec.infrastructure.buyMachines - dec.infrastructure.sellMachines;
+        const vehicles = prev.assets.vehicles + dec.infrastructure.buyVehicles - dec.infrastructure.sellVehicles;
 
-        // ---- ASSEMBLY CAPACITY ----
-        const assemblyHoursAvailable = employees * 480 * shiftMultiplier * productivityBonus; // 480 hrs/qtr per worker
+        // Asset Valuations (with Depreciation)
+        // E.g., Plant $1M each, Machines $100k, Vehicles $20k
+        const newPlantValue = prev.assets.plantValue + (dec.infrastructure.buyPlant * 1000000) - (dec.infrastructure.sellPlant * 800000);
+        const newMachinesValue = prev.assets.machinesValue + (dec.infrastructure.buyMachines * 100000) - (dec.infrastructure.sellMachines * 50000);
+        const newVehiclesValue = prev.assets.vehiclesValue + (dec.infrastructure.buyVehicles * 20000) - (dec.infrastructure.sellVehicles * 10000);
 
-        // ---- MATERIALS ----
-        const materialAvailable = prev.materialStock + dec.rawMaterialOrder * 1000;
-        const materialCostTotal = dec.rawMaterialOrder * config.materialPrice;
+        const plantDepreciation = newPlantValue * 0.01; // 1% per quarter
+        const machineDepreciation = newMachinesValue * 0.05; // 5% per quarter
+        const vehicleDepreciation = newVehiclesValue * 0.10; // 10% per quarter
+        const totalDepreciation = plantDepreciation + machineDepreciation + vehicleDepreciation;
 
-        // ---- PROCESS EACH PRODUCT ----
-        const productResults: Record<string, ProductResult> = {};
-        let totalRev = 0;
-        let totalCOGS = 0;
-        let totalAdvCost = 0;
-        let assemblyHoursUsed = 0;
-        let materialUsed = 0;
-        let totalUnitsSold = 0;
-        let totalDemand = 0;
+        // --- C. PRODUCTION & OPERATIONS ---
+        // Materials available
+        const rawMatAvailable = prev.inventory.rawMaterials + dec.operations.materialsOrdered;
+        const compAAvailable = prev.inventory.componentA + dec.operations.componentAUsage; // Simplified component sourcing
+        const compBAvailable = prev.inventory.componentB + dec.operations.componentBUsage;
 
-        for (const pk of ['p1', 'p2', 'p3'] as const) {
-            const pdefs = PRODUCT_DEFAULTS[pk];
-            const teamPrice = dec.prices[pk];
-            const teamAdv = dec.advertising[pk];
+        // Capacity Constraints
+        // Assume 1 machine = 500 units capacity; 1 worker = 550 units capacity
+        const machineCapacity = machines * 500 * (1 + (dec.rd.rdClass1 * 0.01)); // Process R&D boosts machine efficiency
+        const laborCapacity = prodWorkers * 550 * newProdSkill;
 
-            // DEMAND CALCULATION
-            const advSpend = teamAdv.trade + teamAdv.press_tv + teamAdv.merchandising;
-            const avgAdv = totalAdv[pk] / numTeams;
-            const advEffect = avgAdv > 0 ? Math.pow(advSpend / avgAdv, 0.4) : 1;
-            const rdEffect = 1 + (dec.rdSpend / 500); // R&D boosts quality
+        let targetProduction = dec.operations.productionTarget;
 
-            // Home demand
-            const priceRatioHome = avgPrices[pk].home / teamPrice.home;
-            const homeDemand = Math.round(
-                (pdefs.baseDemandHome * gdpMult * config.marketGrowthFactor / numTeams)
-                * Math.pow(priceRatioHome, pdefs.elasticity)
-                * advEffect * rdEffect * pdefs.qualityFactor
-            );
+        // Final viable production (Cannot exceed capacity or materials)
+        // Assume 1 Finished Good requires 2 Raw Mat, 1 Comp A, 1 Comp B
+        const matConstraint = Math.floor(rawMatAvailable / 2);
+        const compAConstraint = compAAvailable;
+        const compBConstraint = compBAvailable;
 
-            // Export demand
-            const priceRatioExport = avgPrices[pk].export / teamPrice.export;
-            const exportDemand = Math.round(
-                (pdefs.baseDemandExport * gdpMult * config.marketGrowthFactor / numTeams)
-                * Math.pow(priceRatioExport, pdefs.elasticity)
-                * advEffect * rdEffect * 0.9
-            );
+        let actualProduced = Math.min(
+            targetProduction,
+            machineCapacity,
+            laborCapacity,
+            matConstraint,
+            compAConstraint,
+            compBConstraint
+        );
 
-            const totalProductDemand = homeDemand + exportDemand;
+        // Quality and defects (QC spend + Env/Quality R&D reduces defects)
+        const defectBaseRate = 0.08;
+        const qcMitigation = (dec.operations.qcSpend / 100) * 0.04;
+        const rdMitigation = (dec.rd.rdClass3 / 100) * 0.02;
+        const finalDefectRate = Math.max(0.01, defectBaseRate - qcMitigation - rdMitigation);
 
-            // PRODUCTION CONSTRAINTS
-            const assemblyTimePerUnit = pdefs.assemblyMinutes / 60;
-            const maxByAssembly = Math.floor((assemblyHoursAvailable - assemblyHoursUsed) / assemblyTimePerUnit);
-            const maxByMachine = Math.floor((machineCapHours * shiftMultiplier * 0.95 - assemblyHoursUsed * 0.5) / (assemblyTimePerUnit * 0.7));
-            const maxByMaterial = Math.floor((materialAvailable - materialUsed) / 1); // 1 unit material per product
+        const rejectedUnits = Math.round(actualProduced * finalDefectRate);
+        const goodUnits = actualProduced - rejectedUnits;
 
-            const canProduce = Math.max(0, Math.min(maxByAssembly, maxByMachine, maxByMaterial, totalProductDemand + 200));
-            const actualProduced = Math.min(canProduce, totalProductDemand + Math.round(totalProductDemand * 0.1));
+        // Update Inventories
+        const closingRawMat = rawMatAvailable - (actualProduced * 2);
+        const closingCompA = compAAvailable - actualProduced;
+        const closingCompB = compBAvailable - actualProduced;
 
-            // Quality & Rejection
-            const maintenanceEffect = Math.min(1, dec.maintenanceHours / 60);
-            const rejectionRate = 0.05 * (1 - maintenanceEffect * 0.7);
-            const rejected = Math.round(actualProduced * rejectionRate);
-            const goodUnits = actualProduced - rejected;
+        // --- D. MARKETING & SALES (DEMAND) ---
+        // Base demand per area
+        let baseDemandArea1 = 150000 * (config.marketGrowthFactor / numTeams);
+        let baseDemandArea2 = 80000 * (config.marketGrowthFactor / numTeams);
 
-            // Opening stock from previous quarter
-            const openingStock = (prev.productStock as Record<string, number>)[pk] || 0;
-            const availableForSale = goodUnits + openingStock;
-            const unitsSold = Math.min(availableForSale, totalProductDemand);
-            const closingStock = availableForSale - unitsSold;
+        // Price elasticity
+        const priceEffect1 = Math.pow(avgArea1Price / Math.max(0.1, dec.marketing.area1Price), 1.5);
+        const priceEffect2 = Math.pow(avgArea2Price / Math.max(0.1, dec.marketing.area2Price), 1.6);
 
-            // Revenue (weighted avg of home/export prices)
-            const homeRatio = homeDemand / Math.max(1, totalProductDemand);
-            const avgSellingPrice = teamPrice.home * homeRatio + teamPrice.export * (1 - homeRatio);
-            const revenue = Math.round(unitsSold * avgSellingPrice);
+        // Advertising effect
+        const advEffect1 = avgArea1Adv > 0 ? Math.pow(dec.marketing.area1Advertising / avgArea1Adv, 0.4) : 1;
+        const advEffect2 = avgArea2Adv > 0 ? Math.pow(dec.marketing.area2Advertising / avgArea2Adv, 0.4) : 1;
 
-            totalRev += revenue;
-            totalUnitsSold += unitsSold;
-            totalDemand += totalProductDemand;
-            assemblyHoursUsed += actualProduced * assemblyTimePerUnit;
-            materialUsed += actualProduced;
-            totalCOGS += actualProduced * pdefs.materialCostPerUnit;
-            totalAdvCost += (teamAdv.trade + teamAdv.press_tv + teamAdv.merchandising) * 1000;
+        // Quality/R&D effect
+        const qualityEffect = avgPDRD > 0 ? 1 + ((dec.rd.rdClass2 - avgPDRD) / (avgPDRD * 2)) : 1;
 
-            productResults[pk] = {
-                demand: totalProductDemand,
-                produced: actualProduced,
-                sold: unitsSold,
-                revenue,
-                rejected,
-                closingStock,
-                openingStock,
-            };
+        // Sales force effect
+        const salesForceEffect = 1 + (dec.marketing.salesForce * 0.02 * newSalesSkill);
+
+        const potentialArea1 = Math.round(baseDemandArea1 * priceEffect1 * advEffect1 * qualityEffect * salesForceEffect);
+        const potentialArea2 = Math.round(baseDemandArea2 * priceEffect2 * advEffect2 * qualityEffect * salesForceEffect);
+        const totalPotentialDemand = potentialArea1 + potentialArea2;
+
+        const goodsAvailableForSale = prev.inventory.finishedGoods + goodUnits;
+
+        // Allocate stock proportionally if demand > supply
+        let actualArea1 = potentialArea1;
+        let actualArea2 = potentialArea2;
+        if (totalPotentialDemand > goodsAvailableForSale) {
+            const ratio1 = potentialArea1 / totalPotentialDemand;
+            actualArea1 = Math.floor(goodsAvailableForSale * ratio1);
+            actualArea2 = goodsAvailableForSale - actualArea1;
         }
 
-        // ---- FINANCIALS ----
-        const assemblyWages = Math.round(assemblyHoursUsed * 6.95 * shiftCostMultiplier);
-        const machinistWages = Math.round(39 * 11.5 * 480); // 39 machinists
-        const machineRunning = Math.round(assemblyHoursUsed * 8.5);
-        const closingStockValue = Object.values(productResults).reduce((s, r) => s + r.closingStock * 40, 0);
-        const openingStockValue = Object.values(prev.productStock).reduce((s, v) => s + v * 40, 0);
+        const totalSold = actualArea1 + actualArea2;
+        const closingFinishedGoods = goodsAvailableForSale - totalSold;
 
-        const costOfSales = openingStockValue + materialCostTotal + assemblyWages + machinistWages + machineRunning - closingStockValue;
-        const grossProfit = totalRev - costOfSales;
+        // --- E. FINANCIALS (PROFIT & LOSS) ---
+        // Revenue
+        const revArea1 = actualArea1 * dec.marketing.area1Price;
+        const revArea2 = actualArea2 * dec.marketing.area2Price;
+        const totalSalesRevenue = revArea1 + revArea2;
 
-        const salesExpenses = Math.round(178224 * inflMult);
-        const managementSalaries = dec.managementBudgetK * 1000;
-        const maintenanceCosts = dec.maintenanceHours * 600;
-        const otherOverheads = Math.round((45000 + 13500 + recruitCost + dismissCost + trainCost) * inflMult);
+        // Direct Costs
+        // Stock valuation: Flat assumptions for simplicity (Raw Mat $2, CompA $5, CompB $5, FG $15)
+        const openingStockValue = (prev.inventory.finishedGoods * 15) + (prev.inventory.componentA * 5) + (prev.inventory.componentB * 5) + (prev.inventory.rawMaterials * 2);
+        const materialsPurchasedCost = (dec.operations.materialsOrdered * config.materialPrice) + (dec.operations.componentAUsage * 5) + (dec.operations.componentBUsage * 5); // Simplification
 
-        const totalOverheads = totalAdvCost + salesExpenses + managementSalaries + maintenanceCosts + depreciation + otherOverheads;
+        const prodWages = prodWorkers * 5000; // $5k per worker per quarter
+        const closingStockValueLocal = (closingFinishedGoods * 15) + (closingCompA * 5) + (closingCompB * 5) + (closingRawMat * 2);
+
+        const costOfGoodsSold = openingStockValue + materialsPurchasedCost + prodWages + totalDepreciation - closingStockValueLocal;
+        const grossProfit = totalSalesRevenue - costOfGoodsSold;
+
+        // Overheads
+        const advCost = (dec.marketing.area1Advertising + dec.marketing.area2Advertising) * 1000;
+        const salesForceCost = salesStaff * 6000; // $6k base
+        const commissionCost = totalSalesRevenue * (dec.marketing.commissionRate / 100);
+        const adminSalaries = adminStaff * 7000;
+        const qcCost = dec.operations.qcSpend * 1000;
+        const rdCost = (dec.rd.rdClass1 + dec.rd.rdClass2 + dec.rd.rdClass3 + dec.rd.rdClass4) * 1000;
+
+        // Interest calculation
+        const shortTermInterestRate = (config.interestRate + 2) / 100 / 4; // Quarterly
+        const longTermInterestRate = config.interestRate / 100 / 4;
+        let interestPaid = prev.fixedTermLoans * longTermInterestRate;
+        if (prev.overdraft > 0) {
+            interestPaid += prev.overdraft * shortTermInterestRate;
+        }
+
+        const totalOverheads = advCost + salesForceCost + commissionCost + adminSalaries + qcCost + rdCost + interestPaid;
         const operatingProfit = grossProfit - totalOverheads;
 
-        const interestRate = config.interestRate / 100;
-        const interestPaid = Math.round((prev.loans > 0 ? prev.loans * interestRate / 4 : 0) + (prev.cash < 0 ? Math.abs(prev.cash) * (interestRate + 0.02) / 4 : 0));
+        // Tax
+        const taxableIncome = operatingProfit - prev.lastQuarterTaxOwed; // Using prior tax for simplified offsetting
+        const currentTax = taxableIncome > 0 ? taxableIncome * 0.33 : 0; // 33% standard corp tax
+        const netProfit = operatingProfit - currentTax;
 
-        const netProfitBeforeTax = operatingProfit - interestPaid;
-        const tax = netProfitBeforeTax > 0 ? Math.round(netProfitBeforeTax * 0.19) : 0;
-        const netProfit = netProfitBeforeTax - tax;
+        // Dividends
+        const dividendPaid = dec.finance.dividendCents * (prev.shareCapital / 1); // Assuming $1 par value shares
+        const retainedProfitForQuarter = netProfit - dividendPaid;
+        const cumulativeRetainedProfit = prev.retainedProfit + retainedProfitForQuarter;
 
-        // ---- IPO LOGIC ----
-        let currentIPO = { ...prev.ipoState };
-        let ipoCashInflow = 0;
-        if (!currentIPO.isPublic && dec.launchIPO && dec.ipoSharePrice > 0 && dec.ipoSharesIssued > 0) {
-            currentIPO = {
-                isPublic: true,
-                sharePrice: dec.ipoSharePrice,
-                sharesIssued: dec.ipoSharesIssued,
-                ipoQuarter: quarter,
-            };
-            ipoCashInflow = dec.ipoSharePrice * dec.ipoSharesIssued;
+        // --- F. BALANCE SHEET ---
+        // Assets
+        const netPlant = newPlantValue - plantDepreciation;
+        const netMachines = newMachinesValue - machineDepreciation;
+        const netVehicles = newVehiclesValue - vehicleDepreciation;
+        const totalFixedAssets = netPlant + netMachines + netVehicles;
+
+        const debtors = totalSalesRevenue * 0.25; // 25% of sales on credit
+
+        // Cash flow proxy for simplicity
+        const cashIn = totalSalesRevenue * 0.75 + (prev.cash > 0 ? prev.cash : 0) + dec.finance.fixedTermLoanRequest;
+        const cashOut = materialsPurchasedCost + prodWages + totalOverheads + currentTax + dividendPaid +
+            (dec.infrastructure.buyPlant * 1000000) + (dec.infrastructure.buyMachines * 100000) + (dec.infrastructure.buyVehicles * 20000) +
+            (prev.overdraft > 0 ? prev.overdraft : 0);
+
+        let newCash = 0;
+        let newOverdraft = 0;
+        const netCashPosition = cashIn - cashOut;
+
+        if (netCashPosition >= 0) {
+            newCash = netCashPosition;
+        } else {
+            newOverdraft = Math.abs(netCashPosition);
         }
 
-        // Dividends only apply to public companies
-        const dividendTotal = currentIPO.isPublic ? dec.dividendCents * currentIPO.sharesIssued : 0;
-        const retainedProfit = netProfit - dividendTotal;
+        const currentAssetsTotal = closingStockValueLocal + debtors + newCash;
 
-        const pnl: ProfitAndLoss = {
-            salesRevenue: totalRev,
+        // Liabilities
+        const creditors = materialsPurchasedCost * 0.3; // 30% of materials on credit
+        const currentLiabilitiesTotal = creditors + newOverdraft + currentTax; // Taxes owed paid next quarter
+
+        const netCurrentAssets = currentAssetsTotal - currentLiabilitiesTotal;
+        const totalAssetsLessCurrent = totalFixedAssets + netCurrentAssets;
+
+        const newLoans = prev.fixedTermLoans + dec.finance.fixedTermLoanRequest;
+        const netAssets = totalAssetsLessCurrent - newLoans;
+
+        // Equity
+        const totalCapital = prev.shareCapital + cumulativeRetainedProfit;
+
+        // --- G. RESULTS ASSEMBLY ---
+        const marketSharePercent = totalPotentialDemand > 0 ? (totalSold / (150000 * config.marketGrowthFactor)) * 100 : 0;
+
+        // Build Output Objects
+        const pnlOut: TopazProfitAndLoss = {
+            salesRevenue: totalSalesRevenue,
             openingStockValue,
-            materialsPurchased: materialCostTotal,
-            assemblyWages,
-            machinistWages,
-            machineRunningCosts: machineRunning,
-            lessClosingStockValue: closingStockValue,
-            costOfSales,
+            materialsPurchased: materialsPurchasedCost,
+            productionWages: prodWages,
+            depreciation: totalDepreciation,
+            lessClosingStockValue: closingStockValueLocal,
+            costOfGoodsSold,
             grossProfit,
-            advertisingCost: totalAdvCost,
-            salesExpenses,
-            managementSalaries,
-            maintenanceCosts,
-            depreciation,
-            otherOverheads,
+            advertisingCost: advCost,
+            salesForceCost,
+            commissionCost,
+            adminSalaries,
+            qcCost,
+            rdCost,
+            interestPaid,
             totalOverheads,
             operatingProfit,
-            interestPaid,
-            netProfitBeforeTax,
-            tax,
+            tax: currentTax,
             netProfit,
-            dividendPaid: dividendTotal,
-            retainedProfit,
+            dividendPaid,
+            retainedProfit: retainedProfitForQuarter
         };
 
-        // ---- BALANCE SHEET ----
-        const newCash = prev.cash + totalRev * 0.65 - costOfSales * 0.8 - totalOverheads + dec.loanRequest * 1000 - newMachineCost - dividendTotal - interestPaid - tax + ipoCashInflow;
-        const newLoans = prev.loans + dec.loanRequest * 1000;
-
-        const bs: BalanceSheet = {
+        const bsOut: TopazBalanceSheet = {
             fixedAssets: {
-                property: 300000,
-                machinery: machineValue - depreciation,
-                vehicles: Math.round(175758 * (1 - 0.02)),
-                totalFixed: 300000 + (machineValue - depreciation) + Math.round(175758 * 0.98),
+                plant: netPlant,
+                machines: netMachines,
+                vehicles: netVehicles,
+                totalFixed: totalFixedAssets
             },
             currentAssets: {
-                productStock: closingStockValue,
-                materialStock: Math.round((materialAvailable - materialUsed) * config.materialPrice / 1000),
-                debtors: Math.round(totalRev * 0.35),
-                cash: Math.max(0, newCash),
-                totalCurrent: 0,
+                stockValuation: closingStockValueLocal,
+                debtors,
+                cash: newCash,
+                totalCurrent: currentAssetsTotal
             },
             currentLiabilities: {
-                creditors: Math.round(materialCostTotal * 0.4),
-                overdraft: newCash < 0 ? Math.abs(Math.round(newCash)) : 0,
-                taxOwed: tax,
-                totalCurrent: 0,
+                creditors,
+                overdraft: newOverdraft,
+                taxOwed: currentTax,
+                totalCurrent: currentLiabilitiesTotal
             },
-            netCurrentAssets: 0,
-            totalAssetsLessCurrentLiabilities: 0,
-            longTermLiabilities: { loans: newLoans },
-            netAssets: 0,
+            netCurrentAssets,
+            totalAssetsLessCurrentLiabilities: totalAssetsLessCurrent,
+            longTermLiabilities: {
+                loans: newLoans
+            },
+            netAssets,
             capital: {
-                shareCapital: currentIPO.isPublic ? currentIPO.sharesIssued * currentIPO.sharePrice : 0,
-                reserves: prev.reserves + retainedProfit,
-                totalCapital: 0,
+                shareCapital: prev.shareCapital,
+                reserves: cumulativeRetainedProfit,
+                totalCapital
+            }
+        };
+
+        const statsOut: TopazProductStats = {
+            potentialSalesArea1: potentialArea1,
+            actualSalesArea1: actualArea1,
+            potentialSalesArea2: potentialArea2,
+            actualSalesArea2: actualArea2,
+            marketSharePercent,
+            qualityRatingPercent: Math.min(100, 70 + (dec.rd.rdClass2 * 0.5)),
+            defectsPercent: finalDefectRate * 100
+        };
+
+        const nextCf: TeamCarryForward = {
+            inventory: {
+                finishedGoods: closingFinishedGoods,
+                componentA: closingCompA,
+                componentB: closingCompB,
+                rawMaterials: closingRawMat
             },
+            staffing: {
+                productionWorkers: prodWorkers,
+                adminStaff,
+                salesStaff,
+                productionSkillLevel: newProdSkill,
+                salesSkillLevel: newSalesSkill
+            },
+            assets: {
+                plantUnits,
+                machines,
+                vehicles,
+                plantValue: netPlant,
+                machinesValue: netMachines,
+                vehiclesValue: netVehicles
+            },
+            cash: newCash,
+            overdraft: newOverdraft,
+            fixedTermLoans: newLoans,
+            retainedProfit: cumulativeRetainedProfit,
+            shareCapital: prev.shareCapital,
+            lastQuarterTaxOwed: currentTax,
+            lastQuarterRDCumulative: prev.lastQuarterRDCumulative + rdCost
         };
-        bs.currentAssets.totalCurrent = bs.currentAssets.productStock + bs.currentAssets.materialStock + bs.currentAssets.debtors + bs.currentAssets.cash;
-        bs.currentLiabilities.totalCurrent = bs.currentLiabilities.creditors + bs.currentLiabilities.overdraft + bs.currentLiabilities.taxOwed;
-        bs.netCurrentAssets = bs.currentAssets.totalCurrent - bs.currentLiabilities.totalCurrent;
-        bs.totalAssetsLessCurrentLiabilities = bs.fixedAssets.totalFixed + bs.netCurrentAssets;
-        bs.netAssets = bs.totalAssetsLessCurrentLiabilities - bs.longTermLiabilities.loans;
-        bs.capital.totalCapital = bs.capital.shareCapital + bs.capital.reserves;
 
-        // ---- CASH FLOW ----
-        const cf: CashFlow = {
-            tradingReceipts: Math.round(totalRev * 0.65 + prev.cash * 0.1),
-            tradingPayments: Math.round(costOfSales * 0.8 + totalOverheads * 0.9),
-            operatingCashFlow: 0,
-            capitalExpenditure: newMachineCost,
-            investingCashFlow: -newMachineCost,
-            loanReceipts: dec.loanRequest * 1000,
-            interestPaid,
-            dividendPaid: dividendTotal,
-            financingCashFlow: 0,
-            netCashFlow: 0,
-            openingBalance: prev.cash,
-            closingBalance: newCash,
-        };
-        cf.operatingCashFlow = cf.tradingReceipts - cf.tradingPayments;
-        cf.financingCashFlow = cf.loanReceipts - cf.interestPaid - cf.dividendPaid;
-        cf.netCashFlow = cf.operatingCashFlow + cf.investingCashFlow + cf.financingCashFlow;
-
-        // ---- KPIs ----
-        const cumProfit = prev.cumulativeProfit + netProfit;
-        let finalSharePrice = currentIPO.sharePrice;
-        if (currentIPO.isPublic && currentIPO.ipoQuarter !== quarter) {
-            // Share price evolves for public companies (not during IPO quarter itself)
-            const sharePriceChange = (netProfit / 100000) * 3 + (dividendTotal > 0 ? 1.5 : -0.5);
-            finalSharePrice = Math.max(1, Math.round((currentIPO.sharePrice + sharePriceChange) * 10) / 10);
-        }
-        if (currentIPO.isPublic) {
-            currentIPO.sharePrice = finalSharePrice;
-        }
-        const marketShare = totalDemand > 0 ? Math.round((totalUnitsSold / (totalDemand * numTeams)) * 10000) / 100 : 0;
-        const companyValue = currentIPO.isPublic ? finalSharePrice * currentIPO.sharesIssued : bs.netAssets;
+        newCarryForwards.set(tid, nextCf);
 
         results.set(tid, {
             teamId: tid,
             quarter,
-            products: productResults as any,
-            profitAndLoss: pnl,
-            balanceSheet: bs,
-            cashFlow: cf,
+            decisions: decisions.get(tid)!,
+            previousCarryForward: prev,
+            carryForward: nextCf,
+            stats: statsOut,
+            profitAndLoss: pnlOut,
+            balanceSheet: bsOut,
             kpis: {
                 netProfit,
-                sharePrice: finalSharePrice,
-                marketShare,
-                companyValue,
-                totalRevenue: totalRev,
-                employees,
-            },
-        });
-
-        teamRevenues.push(totalRev);
-
-        newCarryForwards.set(tid, {
-            cash: newCash,
-            machines: machineValue - depreciation,
-            machineCapacityHours: machineCapHours,
-            employees,
-            productStock: {
-                p1: productResults.p1.closingStock,
-                p2: productResults.p2.closingStock,
-                p3: productResults.p3.closingStock,
-            },
-            materialStock: Math.max(0, materialAvailable - materialUsed),
-            loans: newLoans,
-            reserves: prev.reserves + retainedProfit,
-            ipoState: currentIPO,
-            cumulativeProfit: cumProfit,
-            trainedWorkers: prev.trainedWorkers + dec.trainWorkers,
+                marketShare: marketSharePercent,
+                companyValue: netAssets
+            }
         });
     }
 

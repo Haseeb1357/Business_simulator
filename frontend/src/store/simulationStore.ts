@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import {
-    TeamDecision, TeamQuarterResult, TeamCarryForward, GameConfig, IPOState,
+    TeamDecision, TeamQuarterResult, TeamCarryForward, GameConfig,
     getDefaultDecision, randomizeDecision, getInitialCarryForward,
     processQuarterSimulation,
 } from '../engine/simulationEngine';
@@ -10,6 +10,7 @@ export interface TeamInfo {
     id: number;
     name: string;
     companyNumber: number;
+    hasSubmittedDecision?: boolean;
 }
 
 // ---- Store Interface ----
@@ -43,15 +44,19 @@ interface SimulationState {
     processQuarter: () => void;
     resetGame: () => void;
     updateGameConfig: (config: Partial<GameConfig>) => void;
-    launchIPO: (teamId: number, sharePrice: number, sharesIssued: number) => void;
-    adminEditSharePrice: (teamId: number, newPrice: number) => void;
+    addTeam: (name: string) => void;
+    removeTeam: (teamId: number) => void;
+    addNewsItem: (newsText: string) => void;
+
+    // ----------------------------------------------------
+    // Admin Overrides
+    // ----------------------------------------------------
 
     // Helpers
     getTeamResult: (teamId: number, quarter: number) => TeamQuarterResult | undefined;
     getTeamLatestResult: (teamId: number) => TeamQuarterResult | undefined;
     getAllTeamLatestResults: () => TeamQuarterResult[];
     getTeamResultHistory: (teamId: number) => TeamQuarterResult[];
-    getTeamIPOState: (teamId: number) => IPOState;
 }
 
 // ---- Default Teams ----
@@ -73,6 +78,7 @@ const DEFAULT_CONFIG: GameConfig = {
     materialPrice: 50,
     unemploymentRate: 5.0,
     marketGrowthFactor: 1.02,
+    news: [],
 };
 
 // ---- Initialize Maps ----
@@ -141,7 +147,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
         }
 
         log.push(`> ${state.teams.length} teams locked. Running simulation...`);
-        log.push(`> Calculating demand across ${state.teams.length} companies × 3 products...`);
+        log.push(`> Calculating demand across ${state.teams.length} companies...`);
         set({ processingLog: [...log] });
 
         // Run simulation
@@ -160,12 +166,11 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
             allRes.set(tid, [...existing, result]);
         }
 
-        log.push(`> Processing factory output vs demand constraints...`);
         log.push(`> Generating P&L and Balance Sheet ledgers...`);
 
         for (const [tid, result] of results) {
             const team = state.teams.find(t => t.id === tid);
-            log.push(`> ${team?.name}: Revenue $${result.kpis.totalRevenue.toLocaleString()}, Net Profit $${result.kpis.netProfit.toLocaleString()}`);
+            log.push(`> ${team?.name}: Revenue $${result.profitAndLoss.salesRevenue.toLocaleString()}, Net Profit $${result.kpis.netProfit.toLocaleString()}`);
         }
 
         log.push(`> Quarter ${state.currentQuarter} processing COMPLETE.`);
@@ -199,28 +204,56 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
         set({ gameConfig: { ...get().gameConfig, ...config } });
     },
 
-    launchIPO: (teamId, sharePrice, sharesIssued) => {
-        const cfs = new Map(get().carryForwards);
-        const cf = cfs.get(teamId);
-        if (cf && !cf.ipoState.isPublic) {
-            cfs.set(teamId, {
-                ...cf,
-                ipoState: { isPublic: true, sharePrice, sharesIssued, ipoQuarter: get().currentQuarter },
-            });
-            set({ carryForwards: cfs });
-        }
+    addTeam: (name) => {
+        const { teams, currentDecisions, carryForwards } = get();
+        const newId = teams.length > 0 ? Math.max(...teams.map(t => t.id)) + 1 : 1;
+        const compNum = teams.length > 0 ? Math.max(...teams.map(t => t.companyNumber)) + 1 : 1;
+
+        const newTeam: TeamInfo = { id: newId, name, companyNumber: compNum };
+
+        const newDecisions = new Map(currentDecisions);
+        newDecisions.set(newId, getDefaultDecision());
+
+        const newCarryForwards = new Map(carryForwards);
+        newCarryForwards.set(newId, getInitialCarryForward());
+
+        set({
+            teams: [...teams, newTeam],
+            currentDecisions: newDecisions,
+            carryForwards: newCarryForwards
+        });
     },
 
-    adminEditSharePrice: (teamId, newPrice) => {
-        const cfs = new Map(get().carryForwards);
-        const cf = cfs.get(teamId);
-        if (cf && cf.ipoState.isPublic) {
-            cfs.set(teamId, {
-                ...cf,
-                ipoState: { ...cf.ipoState, sharePrice: newPrice },
-            });
-            set({ carryForwards: cfs });
-        }
+    removeTeam: (teamId) => {
+        const { teams, currentDecisions, carryForwards, allResults } = get();
+
+        const newDecisions = new Map(currentDecisions);
+        newDecisions.delete(teamId);
+
+        const newCarryForwards = new Map(carryForwards);
+        newCarryForwards.delete(teamId);
+
+        const newAllResults = new Map(allResults);
+        newAllResults.delete(teamId);
+
+        set({
+            teams: teams.filter(t => t.id !== teamId),
+            currentDecisions: newDecisions,
+            carryForwards: newCarryForwards,
+            allResults: newAllResults,
+            activeTeamId: get().activeTeamId === teamId && teams.length > 1 ? teams.find(t => t.id !== teamId)!.id : get().activeTeamId
+        });
+    },
+
+    addNewsItem: (newsText) => {
+        const { gameConfig, currentQuarter } = get();
+        const fullNewsElement = `[Q${currentQuarter}] ${newsText}`;
+        set({
+            gameConfig: {
+                ...gameConfig,
+                news: [...(gameConfig.news || []), fullNewsElement]
+            }
+        });
     },
 
     getTeamResult: (teamId, quarter) => {
@@ -245,10 +278,5 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
 
     getTeamResultHistory: (teamId) => {
         return get().allResults.get(teamId) || [];
-    },
-
-    getTeamIPOState: (teamId) => {
-        const cf = get().carryForwards.get(teamId);
-        return cf?.ipoState ?? { isPublic: false, sharePrice: 0, sharesIssued: 0, ipoQuarter: null };
     },
 }));
