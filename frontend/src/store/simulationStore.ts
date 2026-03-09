@@ -61,14 +61,14 @@ interface SimulationState {
 
 // ---- Default Teams ----
 const DEFAULT_TEAMS: TeamInfo[] = [
-    { id: 1, name: 'Alpha Corp', companyNumber: 1 },
-    { id: 2, name: 'Beta Industries', companyNumber: 2 },
-    { id: 3, name: 'Gamma Global', companyNumber: 3 },
-    { id: 4, name: 'Delta Dynamics', companyNumber: 4 },
-    { id: 5, name: 'Epsilon Enterprises', companyNumber: 5 },
-    { id: 6, name: 'Zeta Holdings', companyNumber: 6 },
-    { id: 7, name: 'Eta Manufacturing', companyNumber: 7 },
-    { id: 8, name: 'Theta Solutions', companyNumber: 8 },
+    { id: 1, name: 'Team 1', companyNumber: 1 },
+    { id: 2, name: 'Team 2', companyNumber: 2 },
+    { id: 3, name: 'Team 3', companyNumber: 3 },
+    { id: 4, name: 'Team 4', companyNumber: 4 },
+    { id: 5, name: 'Team 5', companyNumber: 5 },
+    { id: 6, name: 'Team 6', companyNumber: 6 },
+    { id: 7, name: 'Team 7', companyNumber: 7 },
+    { id: 8, name: 'Team 8', companyNumber: 8 },
 ];
 
 const DEFAULT_CONFIG: GameConfig = {
