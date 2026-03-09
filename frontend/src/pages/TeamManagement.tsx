@@ -1,5 +1,6 @@
 import Sidebar from '../components/Sidebar';
 import { useSimulationStore } from '../store/simulationStore';
+import { Users, Shield } from 'lucide-react';
 
 const TeamManagement = () => {
     const teams = useSimulationStore(s => s.teams);
@@ -25,48 +26,51 @@ const TeamManagement = () => {
     const fmt = (n: number) => n >= 0 ? `$${n.toLocaleString()}` : `-$${Math.abs(n).toLocaleString()}`;
 
     return (
-        <div className="flex h-screen overflow-hidden">
+        <div className="flex h-screen overflow-hidden bg-navy-900">
             <Sidebar />
-            <div className="flex-1 flex flex-col overflow-y-auto pt-16 lg:pt-0 lg:pl-72 bg-slate-50">
-                <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
-                    <div className="flex justify-between items-center mb-6">
-                        <div>
-                            <h1 className="text-2xl font-bold text-slate-800">Team Management</h1>
-                            <p className="text-slate-500">Manage competing teams in the simulation</p>
-                        </div>
+            <div className="flex-1 flex flex-col overflow-y-auto pt-16 lg:pt-0 lg:pl-72">
+                <main className="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-8">
+                    <div className="border-b border-navy-800 pb-8">
+                        <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3 italic uppercase">
+                            <Users className="text-gold-500 w-8 h-8" />
+                            Entity <span className="text-gold-500">Directory</span>
+                        </h1>
+                        <p className="text-slate-500 font-bold text-xs uppercase tracking-widest mt-1">Market Participants & Active Units</p>
                     </div>
 
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                        <table className="min-w-full divide-y divide-slate-200">
-                            <thead className="bg-slate-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Team</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Company</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Rank</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Net Profit</th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                    <div className="bg-navy-800 rounded-3xl border border-navy-700 shadow-2xl overflow-hidden">
+                        <table className="min-w-full">
+                            <thead>
+                                <tr className="bg-navy-900/50 border-b border-navy-700">
+                                    <th className="px-8 py-5 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Competitor</th>
+                                    <th className="px-8 py-5 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Assignment</th>
+                                    <th className="px-8 py-5 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Rank</th>
+                                    <th className="px-8 py-5 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Net Profit</th>
+                                    <th className="px-8 py-5 text-right text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Protocol</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-slate-200">
+                            <tbody className="divide-y divide-navy-700/50">
                                 {teamsData.map(team => (
-                                    <tr key={team.id} className={`hover:bg-slate-50 transition-colors ${team.id === activeTeamId ? 'bg-primary-50/50' : ''}`}>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-xs">
+                                    <tr key={team.id} className={`group transition-all hover:bg-navy-700/30 ${team.id === activeTeamId ? 'bg-gold-500/5' : ''}`}>
+                                        <td className="px-8 py-6 whitespace-nowrap">
+                                            <div className="flex items-center gap-4">
+                                                <div className={`h-10 w-10 rounded-2xl flex items-center justify-center font-black text-xs shadow-lg transition-transform group-hover:scale-110 ${team.id === activeTeamId ? 'bg-gold-500 text-navy-900' : 'bg-navy-900 text-slate-400 border border-navy-700'}`}>
                                                     T{team.companyNumber}
                                                 </div>
-                                                <span className="text-sm font-semibold text-slate-900">{team.name}</span>
+                                                <span className={`font-black text-sm uppercase tracking-tight ${team.id === activeTeamId ? 'text-gold-500' : 'text-slate-200'} transition-colors`}>{team.name}</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">Company {team.companyNumber}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-700">#{team.rank}</td>
-                                        <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${team.profit < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                                        <td className="px-8 py-6 whitespace-nowrap text-[10px] font-bold text-slate-500 uppercase tracking-widest">Company Unit {team.companyNumber}</td>
+                                        <td className="px-8 py-6 whitespace-nowrap">
+                                            <span className={`text-lg font-black ${team.rank === 1 ? 'text-gold-500' : team.rank === 2 ? 'text-slate-300' : team.rank === 3 ? 'text-amber-600' : 'text-slate-500'}`}>#{team.rank}</span>
+                                        </td>
+                                        <td className={`px-8 py-6 whitespace-nowrap font-mono font-bold ${team.profit < 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
                                             {latestQ > 0 ? fmt(team.profit) : '—'}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                        <td className="px-8 py-6 whitespace-nowrap text-right">
                                             <button onClick={() => setActiveTeam(team.id)}
-                                                className={`font-medium mr-3 ${team.id === activeTeamId ? 'text-emerald-600' : 'text-primary-600 hover:text-primary-900'}`}>
-                                                {team.id === activeTeamId ? '✓ Active' : 'Select'}
+                                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${team.id === activeTeamId ? 'bg-gold-500/10 text-gold-500 border border-gold-500/20' : 'bg-navy-900 text-slate-500 border border-navy-700 hover:text-white hover:border-slate-500'}`}>
+                                                {team.id === activeTeamId ? 'ACTIVE' : 'ENGAGE'}
                                             </button>
                                         </td>
                                     </tr>
@@ -75,8 +79,13 @@ const TeamManagement = () => {
                         </table>
                     </div>
 
-                    <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
-                        <strong>Tip:</strong> Click "Select" to switch your active team. All decision inputs and reports will update for the selected team.
+                    <div className="bg-navy-800/50 border border-navy-700/50 rounded-2xl p-6 flex items-center gap-4">
+                        <div className="h-10 w-10 bg-gold-500/10 rounded-full flex items-center justify-center text-gold-500">
+                            <Shield className="w-5 h-5" />
+                        </div>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed">
+                            Selection protocol enforced. Switch the active entity to modify regional decision matrices and access internal quarterly ledgers.
+                        </p>
                     </div>
                 </main>
             </div>

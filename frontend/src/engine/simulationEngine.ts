@@ -286,12 +286,99 @@ function randBetween(min: number, max: number): number {
 
 export function randomizeDecision(): TeamDecision {
     const def = getDefaultDecision();
-    def.prices.homeMarkets = [randBetween(12, 20), randBetween(15, 25), 0];
-    def.promotion.advertisingSupport = [randBetween(20, 80), randBetween(10, 50), 0];
-    def.deliveries.southArea = [randBetween(5000, 15000), randBetween(2000, 8000), 0];
-    def.rawMaterial.unitsToOrder = randBetween(30000, 80000);
-    def.salesforceRemuneration.commission = randBetween(2, 8);
+
+    // Product Improvements (random booleans)
+    def.productImprovements = [Math.random() > 0.5, Math.random() > 0.5, Math.random() > 0.5];
+
+    // Prices
+    def.prices.exportMarket = [randBetween(10, 25), randBetween(12, 28), randBetween(8, 22)];
+    def.prices.homeMarkets = [randBetween(12, 20), randBetween(15, 25), randBetween(10, 18)];
+
+    // Promotion
+    def.promotion.tradePress = [randBetween(0, 15), randBetween(0, 15), randBetween(0, 12)];
+    def.promotion.advertisingSupport = [randBetween(20, 80), randBetween(10, 50), randBetween(10, 40)];
+    def.promotion.merchandising = [randBetween(0, 20), randBetween(0, 20), randBetween(0, 15)];
+
+    // Assembly Time
+    def.assemblyTime = [randBetween(20, 60), randBetween(25, 65), randBetween(20, 50)];
+
+    // Finance & Operations
+    def.dividendRate = randBetween(0, 10);
+    def.daysCreditAllowed = randBetween(14, 60);
+    def.vansToBuy = randBetween(0, 3);
+    def.vansToSell = randBetween(0, 2);
+
+    // Information Wanted
+    def.informationWanted = {
+        otherCompanies: Math.random() > 0.5,
+        marketShares: Math.random() > 0.5,
+    };
+
+    // Deliveries (all areas)
+    def.deliveries.exportArea = [randBetween(0, 5000), randBetween(0, 3000), randBetween(0, 2000)];
+    def.deliveries.southArea = [randBetween(5000, 15000), randBetween(2000, 8000), randBetween(1000, 5000)];
+    def.deliveries.westArea = [randBetween(2000, 8000), randBetween(1000, 5000), randBetween(500, 3000)];
+    def.deliveries.northArea = [randBetween(2000, 8000), randBetween(1000, 5000), randBetween(500, 3000)];
+
+    // Research
     def.researchExpenditure = randBetween(5, 30);
+
+    // Salesforce Allocation
+    def.salesforceAllocated = {
+        exportArea: randBetween(0, 5),
+        southArea: randBetween(1, 6),
+        westArea: randBetween(1, 5),
+        northArea: randBetween(1, 5),
+    };
+
+    // Salesforce Remuneration
+    def.salesforceRemuneration = {
+        quarterlySalary: randBetween(50, 120),
+        commission: randBetween(2, 8),
+    };
+
+    // Assembly Workers Wage
+    def.assemblyWorkersWage = {
+        pounds: randBetween(8, 14),
+        pence: randBetween(0, 99),
+    };
+
+    // Shift Level
+    def.shiftLevel = randBetween(1, 3);
+
+    // Management Budget
+    def.managementBudget = randBetween(20, 80);
+
+    // Contract Maintenance Hours
+    def.contractMaintenanceHours = randBetween(20, 80);
+
+    // Machines to Sell
+    def.machinesToSell = randBetween(0, 2);
+
+    // Salesforce Recruit/Dismiss/Train
+    def.salesforce = {
+        recruit: randBetween(0, 3),
+        dismiss: randBetween(0, 2),
+        train: randBetween(0, 3),
+    };
+
+    // Assembly Workers Recruit/Dismiss/Train
+    def.assemblyWorkers = {
+        recruit: randBetween(0, 10),
+        dismiss: randBetween(0, 5),
+        train: randBetween(0, 10),
+    };
+
+    // Raw Material
+    def.rawMaterial = {
+        unitsToOrder: randBetween(30000, 80000),
+        supplierNo: randBetween(1, 3),
+        deliveries: randBetween(1, 3),
+    };
+
+    // New Machines to Order
+    def.newMachinesToOrder = randBetween(0, 3);
+
     return def;
 }
 

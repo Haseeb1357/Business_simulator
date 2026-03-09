@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import { useSimulationStore } from '../store/simulationStore';
-import { Play, RefreshCw, RotateCcw, CheckCircle2, AlertTriangle, Clock, X } from 'lucide-react';
+import { Play, RefreshCw, RotateCcw, CheckCircle2, AlertTriangle, Clock, X, Settings, AlertCircle, Users, Pause, Trash2, ChevronRight, Search, Download, Cpu, Database, Shield } from 'lucide-react';
 
 const AdminControl = () => {
     const { currentQuarter, teams, submittedTeams, processQuarter, resetGame, processingLog, gameConfig, updateGameConfig, addTeam, removeTeam, addNewsItem } = useSimulationStore();
@@ -52,68 +52,88 @@ const AdminControl = () => {
     };
 
     return (
-        <div className="flex h-screen overflow-hidden">
+        <div className="flex h-screen overflow-hidden bg-navy-900">
             <Sidebar />
-            <div className="flex-1 flex flex-col overflow-y-auto pt-16 lg:pt-0 lg:pl-72 bg-slate-50">
-                <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
-                    <div className="flex justify-between items-center mb-6">
+            <div className="flex-1 flex flex-col overflow-y-auto pt-16 lg:pt-0 lg:pl-72">
+                <main className="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-8">
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 border-b border-navy-800 pb-8">
                         <div>
-                            <h1 className="text-2xl font-bold text-slate-800">Simulation Control Panel</h1>
-                            <p className="text-slate-500">Instructor Dashboard — Quarter {currentQuarter}</p>
+                            <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3">
+                                <Settings className="text-gold-500 w-8 h-8" />
+                                Simulation <span className="text-gold-500">Control</span>
+                            </h1>
+                            <p className="text-slate-500 font-bold text-xs uppercase tracking-widest mt-1">Global System Administration — Fiscal Phase {currentQuarter}</p>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2 bg-white border border-slate-300 px-3 py-1.5 rounded-md shadow-sm">
-                                <span className="relative flex h-3 w-3">
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3 bg-navy-800 border border-navy-700 px-4 py-2 rounded-xl shadow-lg">
+                                <div className="relative flex h-3 w-3">
                                     <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isProcessing ? 'bg-blue-400' : 'bg-emerald-400'}`}></span>
                                     <span className={`relative inline-flex rounded-full h-3 w-3 ${isProcessing ? 'bg-blue-500' : 'bg-emerald-500'}`}></span>
-                                </span>
-                                <span className="text-sm font-medium text-slate-700">{isProcessing ? 'Processing...' : 'Ready'}</span>
+                                </div>
+                                <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{isProcessing ? 'Engine Active' : 'System Ready'}</span>
                             </div>
-                            <button onClick={handleResetClick} className="text-sm text-red-600 hover:text-red-800 flex items-center gap-1">
-                                <RotateCcw className="h-4 w-4" /> Reset Game
+                            <button onClick={handleResetClick} className="text-[10px] font-black uppercase tracking-widest text-rose-500 hover:text-white hover:bg-rose-500/10 px-3 py-2 rounded-lg transition-all flex items-center gap-2 border border-rose-500/20">
+                                <RotateCcw className="h-4 w-4" /> Master Reset
                             </button>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Quarter Execution */}
-                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 col-span-2">
-                            <h2 className="text-lg font-bold text-slate-800 mb-4">Quarter Execution</h2>
-                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200 mb-6">
-                                <div>
-                                    <h3 className="font-semibold text-slate-900 text-lg">Process Quarter {currentQuarter}</h3>
-                                    <p className="text-sm text-slate-500">{submittedTeams.size}/{teams.length} teams submitted decisions</p>
+                        <div className="lg:col-span-2 space-y-6">
+                            <div className="bg-navy-800 rounded-2xl border border-navy-700 shadow-2xl p-8 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                                    <Play className="w-32 h-32" />
                                 </div>
-                                <button onClick={handleRunSimulation} disabled={isProcessing}
-                                    className="flex items-center gap-2 bg-primary-600 hover:bg-primary-500 text-white px-6 py-3 rounded-lg font-bold shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                                    {isProcessing ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5" />}
-                                    {isProcessing ? 'Running...' : 'Execute Simulation'}
-                                </button>
+                                <div className="relative z-10">
+                                    <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                                        <div>
+                                            <h3 className="text-2xl font-black text-white uppercase italic">Command Q{currentQuarter} Execution</h3>
+                                            <div className="flex items-center gap-3 mt-1">
+                                                <div className="h-2 w-32 bg-navy-900 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-gold-500 transition-all" style={{ width: `${(submittedTeams.size / Math.max(1, teams.length)) * 100}%` }} />
+                                                </div>
+                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                                                    {submittedTeams.size} / {teams.length} Directives Received
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button onClick={handleRunSimulation} disabled={isProcessing}
+                                            className="w-full md:w-auto flex items-center justify-center gap-3 bg-gold-500 hover:bg-white text-navy-900 px-8 py-5 rounded-2xl font-black shadow-2xl shadow-gold-500/10 transition-all active:scale-[0.98] disabled:opacity-50 uppercase text-xs tracking-[0.2em]">
+                                            {isProcessing ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5" />}
+                                            {isProcessing ? 'Processing...' : 'Run Simulation'}
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
-                            <h3 className="font-medium text-slate-700 mb-3">Team Decision Status</h3>
-                            <div className="w-full border border-slate-200 rounded-lg overflow-hidden">
-                                <table className="min-w-full divide-y divide-slate-200">
-                                    <thead className="bg-slate-50">
+                            <div className="bg-navy-800 rounded-2xl border border-navy-700 shadow-2xl overflow-hidden">
+                                <div className="px-6 py-4 border-b border-navy-700 bg-navy-900/50 flex items-center justify-between">
+                                    <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Entity Readiness</h3>
+                                    <Clock className="w-4 h-4 text-slate-600" />
+                                </div>
+                                <table className="w-full text-left">
+                                    <thead className="bg-navy-900/30">
                                         <tr>
-                                            <th className="px-4 py-2.5 text-left text-xs font-medium text-slate-500 uppercase">Team</th>
-                                            <th className="px-4 py-2.5 text-left text-xs font-medium text-slate-500 uppercase">Company</th>
-                                            <th className="px-4 py-2.5 text-left text-xs font-medium text-slate-500 uppercase">Status</th>
+                                            <th className="px-6 py-3 text-[10px] font-black text-slate-600 uppercase tracking-widest">Name</th>
+                                            <th className="px-6 py-3 text-[10px] font-black text-slate-600 uppercase tracking-widest text-right">Status</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-200">
+                                    <tbody className="divide-y divide-navy-700/50">
                                         {teams.map(t => (
-                                            <tr key={t.id} className="hover:bg-slate-50">
-                                                <td className="px-4 py-2.5 text-sm font-medium text-slate-900">{t.name}</td>
-                                                <td className="px-4 py-2.5 text-sm text-slate-500">Company {t.companyNumber}</td>
-                                                <td className="px-4 py-2.5 text-sm">
+                                            <tr key={t.id} className="hover:bg-navy-700/30 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <span className="text-xs font-black text-slate-100 uppercase tracking-wide">{t.name}</span>
+                                                    <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Unit {t.companyNumber}</span>
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
                                                     {submittedTeams.has(t.id) ? (
-                                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700">
-                                                            <CheckCircle2 className="h-3.5 w-3.5" /> Submitted
+                                                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-2 py-1 text-[9px] font-black text-emerald-500 border border-emerald-500/20 uppercase">
+                                                            <CheckCircle2 className="h-3 w-3" /> Transmitted
                                                         </span>
                                                     ) : (
-                                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
-                                                            <Clock className="h-3.5 w-3.5" /> Pending
+                                                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500/10 px-2 py-1 text-[9px] font-black text-amber-500 border border-amber-500/20 uppercase">
+                                                            <Clock className="h-3 w-3" /> Pending
                                                         </span>
                                                     )}
                                                 </td>
@@ -124,120 +144,128 @@ const AdminControl = () => {
                             </div>
                         </div>
 
-                        {/* Market Intervention & News */}
-                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-                            <h2 className="text-lg font-bold text-slate-800 mb-4">Instructor Controls</h2>
-                            <div className="space-y-6">
-                                <div>
-                                    <h3 className="text-sm font-medium text-slate-700 mb-2">Broadcast Quarterly News</h3>
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            value={newsInput}
-                                            onChange={(e) => setNewsInput(e.target.value)}
-                                            placeholder="e.g. Interest rates rise by 1%..."
-                                            className="flex-1 border-slate-300 rounded-md shadow-sm sm:text-sm"
-                                        />
-                                        <button onClick={handleBroadcastNews} className="bg-primary-600 text-white px-3 py-2 rounded-md font-medium text-sm hover:bg-primary-700">Send</button>
+                        {/* Intervention & Variables */}
+                        <div className="space-y-6">
+                            <div className="bg-navy-800 rounded-2xl border border-navy-700 shadow-2xl p-6">
+                                <h2 className="text-[10px] font-black text-white uppercase tracking-widest border-b border-navy-700 pb-4 mb-6 flex items-center gap-2">
+                                    <AlertCircle className="w-4 h-4 text-gold-500" /> Global Dispatch
+                                </h2>
+                                <div className="space-y-6">
+                                    <div>
+                                        <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Market Bulletin</label>
+                                        <div className="flex flex-col gap-3">
+                                            <textarea
+                                                rows={3}
+                                                value={newsInput}
+                                                onChange={(e) => setNewsInput(e.target.value)}
+                                                placeholder="Enter market news summary..."
+                                                className="w-full bg-navy-900 border border-navy-700 text-slate-200 text-xs px-4 py-3 rounded-xl focus:ring-2 focus:ring-gold-500/50 outline-none transition-all placeholder-navy-700 font-medium"
+                                            />
+                                            <button onClick={handleBroadcastNews} className="w-full bg-navy-700 hover:bg-navy-600 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all">Send Bulletin</button>
+                                        </div>
                                     </div>
-                                    <p className="text-xs text-slate-500 mt-1">This will be visible on all team dashboards.</p>
-                                </div>
 
-                                <div className="border-t border-slate-200 pt-4">
-                                    <h3 className="text-sm font-medium text-slate-700 mb-2">Economic Variables</h3>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label className="block text-xs text-slate-500 mb-1">GDP Growth (%)</label>
-                                            <input type="number" value={gameConfig.gdpGrowth} step={0.1}
-                                                onChange={e => updateGameConfig({ gdpGrowth: Number(e.target.value) })}
-                                                className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs text-slate-500 mb-1">Interest Rate (%)</label>
-                                            <input type="number" value={gameConfig.interestRate} step={0.25}
-                                                onChange={e => updateGameConfig({ interestRate: Number(e.target.value) })}
-                                                className="w-full border-slate-300 rounded-md shadow-sm sm:text-sm" />
+                                    <div className="border-t border-navy-700 pt-6">
+                                        <h3 className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4 ml-1">Macroeconomic Shift</h3>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-[9px] font-black text-slate-600 uppercase mb-1.5 ml-1">GDP Growth (%)</label>
+                                                <input type="number" value={gameConfig.gdpGrowth} step={0.1}
+                                                    onChange={e => updateGameConfig({ gdpGrowth: Number(e.target.value) })}
+                                                    className="w-full bg-navy-900 border border-navy-700 text-white rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-gold-500/50 outline-none" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[9px] font-black text-slate-600 uppercase mb-1.5 ml-1">Base Rate (%)</label>
+                                                <input type="number" value={gameConfig.interestRate} step={0.25}
+                                                    onChange={e => updateGameConfig({ interestRate: Number(e.target.value) })}
+                                                    className="w-full bg-navy-900 border border-navy-700 text-white rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-gold-500/50 outline-none" />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+
+                            {/* Terminal */}
+                            <div className="bg-navy-950 rounded-2xl p-5 font-mono text-[11px] text-emerald-400 h-64 overflow-y-auto shadow-inner border border-navy-800 relative">
+                                <div className="absolute top-0 right-0 p-3 opacity-20"><RefreshCw className={`w-4 h-4 ${isProcessing ? 'animate-spin' : ''}`} /></div>
+                                {logLines.length === 0 && <p className="text-navy-700">{'>'} SYS_IDLE: Waiting for execution command...</p>}
+                                {logLines.map((line, i) => (
+                                    <p key={i} className={`mb-1 ${line.includes('COMPLETE') ? 'text-gold-500 font-bold' : line.includes('Error') ? 'text-rose-500' : ''}`}>
+                                        <span className="text-navy-700 mr-2">[{new Date().toLocaleTimeString()}]</span>
+                                        {line}
+                                    </p>
+                                ))}
                             </div>
                         </div>
                     </div>
 
-                    {/* Team Management */}
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
-                        <div className="flex justify-between items-center mb-4">
+                    {/* Team Expansion Terminal */}
+                    <div className="bg-navy-800 rounded-3xl border border-navy-700 shadow-2xl p-8">
+                        <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
                             <div>
-                                <h2 className="text-lg font-bold text-slate-800">Dynamic Team Management</h2>
-                                <p className="text-sm text-slate-500">Add or remove competing companies from the simulation.</p>
+                                <h2 className="text-xl font-black text-white uppercase italic tracking-tight">Entity Deployment</h2>
+                                <p className="text-xs text-slate-500 font-bold tracking-widest uppercase mt-1">Manage competing market participants</p>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-3 w-full md:w-auto">
                                 <input
                                     type="text"
                                     value={newTeamName}
                                     onChange={(e) => setNewTeamName(e.target.value)}
-                                    placeholder="New Team Name"
-                                    className="border-slate-300 rounded-md shadow-sm sm:text-sm w-48"
+                                    placeholder="Enter New Entity Name"
+                                    className="flex-1 md:w-64 bg-navy-900 border border-navy-700 text-white px-5 py-3 rounded-2xl focus:ring-2 focus:ring-gold-500/50 outline-none transition-all placeholder-navy-700 text-xs font-bold uppercase tracking-widest"
                                     onKeyDown={(e) => e.key === 'Enter' && handleAddTeam()}
                                 />
-                                <button onClick={handleAddTeam} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md text-sm font-medium shadow-sm">
-                                    + Add Team
+                                <button onClick={handleAddTeam} className="bg-emerald-600 hover:bg-white hover:text-navy-900 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95">
+                                    + Deploy Unit
                                 </button>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                             {teams.map(t => (
-                                <div key={t.id} className="flex flex-col bg-slate-50 border border-slate-200 rounded-lg p-4">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <span className="font-bold text-slate-800">{t.name}</span>
-                                        <button
-                                            onClick={() => setTeamToDelete({ id: t.id, name: t.name })}
-                                            className="text-slate-400 hover:text-red-600 transition-colors"
-                                            title="Remove Team"
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </button>
+                                <div key={t.id} className="relative group bg-navy-900/50 border border-navy-700 rounded-2xl p-5 hover:border-gold-500/30 transition-all overflow-hidden">
+                                    <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                                        <Users className="w-20 h-20" />
                                     </div>
-                                    <span className="text-xs text-slate-500">Company {t.companyNumber}</span>
+                                    <div className="relative z-10">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Unit-{t.companyNumber}</span>
+                                            <button
+                                                onClick={() => setTeamToDelete({ id: t.id, name: t.name })}
+                                                className="text-navy-700 hover:text-rose-500 transition-colors bg-navy-900 p-1 rounded-md"
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                        <h4 className="text-sm font-black text-white uppercase tracking-tight group-hover:text-gold-500 transition-colors">{t.name}</h4>
+                                    </div>
                                 </div>
                             ))}
                         </div>
-                    </div>
-
-                    {/* Terminal Log */}
-                    <div className="bg-slate-900 rounded-xl p-4 font-mono text-sm text-emerald-400 h-52 overflow-y-auto shadow-inner">
-                        {logLines.length === 0 && <p className="text-slate-600">{'>'} Waiting for simulation command...</p>}
-                        {logLines.map((line, i) => (
-                            <p key={i} className={line.includes('COMPLETE') ? 'text-emerald-300 font-bold' : line.includes('Error') ? 'text-red-400' : ''}>
-                                {line}
-                            </p>
-                        ))}
                     </div>
                 </main>
             </div>
 
             {/* Team Deletion Confirmation Modal */}
             {teamToDelete && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center">
-                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setTeamToDelete(null)} />
-                    <div className="relative bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="p-6">
-                            <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-4">
-                                <AlertTriangle className="h-6 w-6" />
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-navy-950/90 backdrop-blur-md" onClick={() => setTeamToDelete(null)} />
+                    <div className="relative bg-navy-800 rounded-3xl border border-navy-700 shadow-[0_0_50px_rgba(0,0,0,0.5)] max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-8">
+                            <div className="w-16 h-16 rounded-3xl bg-rose-500/10 text-rose-500 flex items-center justify-center mb-6 border border-rose-500/20 shadow-xl shadow-rose-500/10">
+                                <AlertTriangle className="h-8 w-8" />
                             </div>
-                            <h3 className="text-lg font-bold text-slate-900 mb-2">Remove Team</h3>
-                            <p className="text-sm text-slate-500">
-                                Are you sure you want to completely remove <strong>{teamToDelete.name}</strong> from the simulation?
-                                This action will delete their history, decisions, and all associated data. This action cannot be undone.
+                            <h3 className="text-2xl font-black text-white mb-3 uppercase italic tracking-tigh">Terminate Entity</h3>
+                            <p className="text-slate-400 text-sm leading-relaxed font-medium">
+                                System confirmation required to remove <strong className="text-white">{teamToDelete.name}</strong> from active simulation. All historical data, directives, and KPIs will be purged from the core database.
                             </p>
                         </div>
-                        <div className="bg-slate-50 px-6 py-4 flex justify-end gap-3 border-t border-slate-100">
+                        <div className="bg-navy-900/50 px-8 py-6 flex flex-col md:flex-row gap-4 border-t border-navy-700">
                             <button
                                 onClick={() => setTeamToDelete(null)}
-                                className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                                className="flex-1 px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest hover:text-white transition-colors"
                             >
-                                Cancel
+                                Abort Deletion
                             </button>
                             <button
                                 onClick={() => {
@@ -245,9 +273,9 @@ const AdminControl = () => {
                                     setLogLines(prev => [...prev, `> Removed team: ${teamToDelete.name}`]);
                                     setTeamToDelete(null);
                                 }}
-                                className="px-4 py-2 text-sm font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                                className="flex-1 px-6 py-4 text-xs font-black text-navy-900 bg-rose-500 rounded-2xl hover:bg-white transition-all shadow-xl shadow-rose-500/10 active:scale-95"
                             >
-                                Yes, Remove Team
+                                Confirm Termination
                             </button>
                         </div>
                     </div>
@@ -256,48 +284,35 @@ const AdminControl = () => {
 
             {/* Reset Confirmation Modal */}
             {showResetModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center">
-                    {/* Backdrop */}
-                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowResetModal(false)} />
-
-                    {/* Modal */}
-                    <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in">
-                        {/* Header */}
-                        <div className="flex items-center justify-between px-6 pt-6 pb-2">
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-100">
-                                    <AlertTriangle className="h-5 w-5 text-red-600" />
-                                </div>
-                                <h3 className="text-lg font-bold text-slate-900">Reset Simulation</h3>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-navy-950/90 backdrop-blur-md" onClick={() => setShowResetModal(false)} />
+                    <div className="relative bg-navy-800 rounded-3xl border border-navy-700 shadow-[0_0_50px_rgba(0,0,0,0.5)] max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-8">
+                            <div className="w-16 h-16 rounded-3xl bg-rose-500/10 text-rose-500 flex items-center justify-center mb-6 border border-rose-500/20 shadow-xl shadow-rose-500/10">
+                                <RotateCcw className="h-8 w-8" />
                             </div>
-                            <button onClick={() => setShowResetModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
-
-                        {/* Body */}
-                        <div className="px-6 py-4">
-                            <p className="text-slate-600 text-sm leading-relaxed">
-                                This will <strong className="text-red-600">permanently reset</strong> the entire simulation back to <strong>Quarter 1</strong>. All team results, financial data, and submitted decisions will be lost.
+                            <h3 className="text-2xl font-black text-white mb-3 uppercase italic tracking-tight">Full System Reset</h3>
+                            <p className="text-slate-400 text-sm leading-relaxed font-medium">
+                                Initiating a master reset will return the entire simulation environment to <strong>Phase Q1</strong>. All competitive progress and historical ledgers will be wiped across all entities.
                             </p>
-                            <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                                <p className="text-xs text-amber-800 font-medium">⚠ This action cannot be undone.</p>
+                            <div className="mt-6 p-4 bg-rose-500/5 border border-rose-500/20 rounded-2xl">
+                                <p className="text-[10px] text-rose-500 font-black uppercase tracking-widest flex items-center gap-2">
+                                    <AlertTriangle className="w-3 h-3" /> System Critical Operation
+                                </p>
                             </div>
                         </div>
-
-                        {/* Footer */}
-                        <div className="flex items-center justify-end gap-3 px-6 py-4 bg-slate-50 border-t border-slate-200">
+                        <div className="bg-navy-900/50 px-8 py-6 flex flex-col md:flex-row gap-4 border-t border-navy-700">
                             <button
                                 onClick={() => setShowResetModal(false)}
-                                className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                                className="flex-1 px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest hover:text-white transition-colors"
                             >
-                                Cancel
+                                Cancel Reset
                             </button>
                             <button
                                 onClick={handleResetConfirm}
-                                className="px-4 py-2 text-sm font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                                className="flex-1 px-6 py-4 text-xs font-black text-navy-900 bg-rose-500 rounded-2xl hover:bg-white transition-all shadow-xl shadow-rose-500/10 active:scale-95"
                             >
-                                Yes, Reset Game
+                                Confirm Master Reset
                             </button>
                         </div>
                     </div>

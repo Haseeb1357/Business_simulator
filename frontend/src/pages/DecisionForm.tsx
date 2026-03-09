@@ -73,9 +73,9 @@ const DecisionForm: React.FC<DecisionFormProps> = ({ embedded }) => {
     };
 
     return (
-        <div className={`font-['Arial',sans-serif] text-sm flex flex-col items-center ${embedded ? '' : 'p-8 min-h-screen bg-[#fdf8e3]'}`}>
+        <div className={`font-['Arial',sans-serif] text-sm flex flex-col items-center ${embedded ? '' : 'p-8 min-h-screen bg-navy-900 pt-20 lg:pt-8'}`}>
 
-            {!embedded && <h1 className="text-[#800000] text-3xl font-bold mb-4 self-start max-w-5xl w-full mx-auto">Decision Form</h1>}
+            {!embedded && <h1 className="text-white text-3xl font-black mb-8 self-start max-w-5xl w-full mx-auto uppercase italic tracking-tight">Mission <span className="text-gold-500">Directives</span></h1>}
 
             <div className="bg-[#c0c0c0] win-border-outset w-full max-w-5xl flex flex-col mb-4">
                 <div className="bg-[#000080] text-white font-bold p-1 flex justify-between items-center">

@@ -25,147 +25,167 @@ const Dashboard = () => {
 
     const fmt = (n: number | undefined) => {
         if (n === undefined) return '—';
-        return n >= 0 ? `$${n.toLocaleString()}` : `-$${Math.abs(n).toLocaleString()}`;
+        return n >= 0 ? `£${n.toLocaleString()}` : `-£${Math.abs(n).toLocaleString()}`;
     };
 
     return (
-        <div className="flex h-screen overflow-hidden bg-slate-50">
+        <div className="flex h-screen overflow-hidden bg-navy-900">
             <Sidebar />
-            <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden pt-16 lg:pt-0 lg:pl-72">
-                <main className="flex-1 p-4 lg:p-8 max-w-7xl mx-auto w-full space-y-8">
+            <div className="flex-1 flex flex-col overflow-y-auto pt-16 lg:pt-0 lg:pl-72">
+                <main className="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-12">
 
                     {/* Header */}
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 border-b border-slate-200 pb-4">
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 border-b border-navy-800 pb-8">
                         <div>
-                            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Command Center</h1>
-                            <p className="text-slate-500 mt-1">{activeTeam?.name} <span className="text-slate-300 mx-2">|</span> Company {activeTeam?.companyNumber}</p>
+                            <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">
+                                Command <span className="text-gold-500">Center</span>
+                            </h1>
+                            <p className="text-slate-400 mt-2 font-bold tracking-wide uppercase text-xs">
+                                {activeTeam?.name} <span className="text-navy-700 mx-2">|</span> Operational Unit {activeTeam?.companyNumber}
+                            </p>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-6">
                             <div className="text-right">
-                                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Current Phase</span>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-lg font-bold text-primary-600">Quarter {currentQuarter}</span>
-                                    <span className={`px-2.5 py-1 text-xs font-bold rounded-full ${gameStatus === 'inputting' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-blue-100 text-blue-700 border border-blue-200'}`}>
-                                        {gameStatus === 'inputting' ? 'DECISION PHASE' : 'PROCESSING'}
+                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block mb-1">Fiscal Period</span>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-2xl font-black text-white">Q{currentQuarter}</span>
+                                    <span className={`px-3 py-1 text-[10px] font-black rounded-full uppercase tracking-tighter border ${gameStatus === 'inputting' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-blue-500/10 text-blue-500 border-blue-500/20'}`}>
+                                        {gameStatus === 'inputting' ? 'Decision Phase' : 'Simulation Run'}
                                     </span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Section 1: Intelligence & History */}
-                    <section>
-                        <div className="flex items-center gap-2 mb-4">
-                            <Activity className="w-5 h-5 text-indigo-500" />
-                            <h2 className="text-lg font-semibold text-slate-800">Market Intelligence & News</h2>
+                    {/* Section 1: Intelligence & Market News */}
+                    <section className="space-y-6">
+                        <div className="flex items-center gap-3">
+                            <Activity className="w-5 h-5 text-gold-500" />
+                            <h2 className="text-sm font-black text-slate-200 uppercase tracking-widest">Market Intelligence</h2>
                         </div>
-                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-                            {gameConfig.news && gameConfig.news.length > 0 ? (
-                                <ul className="space-y-3">
-                                    {[...gameConfig.news].reverse().slice(0, 3).map((item, idx) => (
-                                        <li key={idx} className="flex gap-3 items-start text-sm">
-                                            <div className="mt-0.5 text-indigo-500"><AlertCircle className="w-4 h-4" /></div>
-                                            <span className="text-slate-700 leading-snug">{item}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p className="text-sm text-slate-500 italic">No market news at this time. The economic environment is stable.</p>
-                            )}
-                            <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                <div>
-                                    <span className="text-slate-500 block text-xs mb-1">GDP Growth</span>
-                                    <span className="font-semibold text-slate-800">{gameConfig.gdpGrowth}%</span>
-                                </div>
-                                <div>
-                                    <span className="text-slate-500 block text-xs mb-1">Inflation</span>
-                                    <span className="font-semibold text-slate-800">{gameConfig.inflationRate}%</span>
-                                </div>
-                                <div>
-                                    <span className="text-slate-500 block text-xs mb-1">Base Interest</span>
-                                    <span className="font-semibold text-slate-800">{gameConfig.interestRate}%</span>
-                                </div>
-                                <div>
-                                    <span className="text-slate-500 block text-xs mb-1">Material Cost</span>
-                                    <span className="font-semibold text-slate-800">${gameConfig.materialPrice}/unit</span>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div className="lg:col-span-2 bg-navy-800 rounded-2xl shadow-2xl border border-navy-700 p-6 flex flex-col">
+                                {gameConfig.news && gameConfig.news.length > 0 ? (
+                                    <ul className="space-y-4 flex-1">
+                                        {[...gameConfig.news].reverse().slice(0, 3).map((item, idx) => (
+                                            <li key={idx} className="flex gap-4 items-start group">
+                                                <div className="mt-1 p-1 bg-navy-900 rounded border border-navy-700 text-gold-500 group-hover:bg-gold-500 group-hover:text-navy-900 transition-colors">
+                                                    <AlertCircle className="w-4 h-4" />
+                                                </div>
+                                                <span className="text-slate-300 text-sm leading-relaxed font-medium">{item}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <div className="flex-1 flex items-center justify-center py-8">
+                                        <p className="text-sm text-slate-500 italic font-medium">Economic conditions reported as stable. No critical bulletins.</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="bg-navy-800 rounded-2xl border border-navy-700 p-6 space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-3 bg-navy-900 rounded-xl border border-navy-700">
+                                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider block mb-1">GDP Growth</span>
+                                        <span className="text-lg font-black text-slate-200">{gameConfig.gdpGrowth}%</span>
+                                    </div>
+                                    <div className="p-3 bg-navy-900 rounded-xl border border-navy-700">
+                                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider block mb-1">Inflation</span>
+                                        <span className="text-lg font-black text-slate-200">{gameConfig.inflationRate}%</span>
+                                    </div>
+                                    <div className="p-3 bg-navy-900 rounded-xl border border-navy-700">
+                                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider block mb-1">Base Rate</span>
+                                        <span className="text-lg font-black text-slate-200">{gameConfig.interestRate}%</span>
+                                    </div>
+                                    <div className="p-3 bg-navy-900 rounded-xl border border-navy-700">
+                                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider block mb-1">Unit Cost</span>
+                                        <span className="text-lg font-black text-slate-200">£{gameConfig.materialPrice}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </section>
 
-                    {/* Section 2: Current Performance (Latest Quarter) */}
-                    <section>
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-2">
+                    {/* Section 2: Current Performance */}
+                    <section className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
                                 <TrendingUp className="w-5 h-5 text-emerald-500" />
-                                <h2 className="text-lg font-semibold text-slate-800">Performance Summary (Q{latestQ})</h2>
+                                <h2 className="text-sm font-black text-slate-200 uppercase tracking-widest">Performance Matrix (Q{latestQ})</h2>
                             </div>
-                            <button className="text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1">
-                                View Full Report <ChevronRight className="w-4 h-4" />
+                            <button className="text-xs font-black text-gold-500 hover:text-white uppercase tracking-widest transition-colors flex items-center gap-2">
+                                Deep Analytics <ChevronRight className="w-4 h-4" />
                             </button>
                         </div>
 
                         {latest ? (
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-                                    <span className="text-xs font-medium text-slate-500 uppercase tracking-widest block mb-1">Revenue</span>
-                                    <span className="text-2xl font-bold text-slate-900">{fmt(latest.profitAndLoss.salesRevenue)}</span>
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                                <div className="bg-navy-800 rounded-2xl shadow-xl border border-navy-700 p-6 group hover:border-gold-500/50 transition-all">
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Total Revenue</span>
+                                    <span className="text-3xl font-black text-white">{fmt(latest.profitAndLoss.salesRevenue)}</span>
                                 </div>
-                                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-                                    <span className="text-xs font-medium text-slate-500 uppercase tracking-widest block mb-1">Net Profit</span>
-                                    <span className={`text-2xl font-bold ${latest.kpis.netProfit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                                <div className="bg-navy-800 rounded-2xl shadow-xl border border-navy-700 p-6 group hover:border-gold-500/50 transition-all">
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Retained Profit</span>
+                                    <span className={`text-3xl font-black ${latest.kpis.netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                                         {fmt(latest.kpis.netProfit)}
                                     </span>
                                 </div>
-                                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 relative">
-                                    <span className="text-xs font-medium text-slate-500 uppercase tracking-widest block mb-1">Market Share</span>
-                                    <span className="text-2xl font-bold text-amber-600">{latest.kpis.marketShare.toFixed(1)}%</span>
+                                <div className="bg-navy-800 rounded-2xl shadow-xl border border-navy-700 p-6 group hover:border-gold-500/50 transition-all">
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Market Dominance</span>
+                                    <span className="text-3xl font-black text-gold-500">{latest.kpis.marketShare.toFixed(1)}%</span>
                                 </div>
-                                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-                                    <span className="text-xs font-medium text-slate-500 uppercase tracking-widest block mb-1">Company Value</span>
-                                    <span className="text-2xl font-bold text-primary-600">£{fmt(latest.kpis.companyValue)}</span>
+                                <div className="bg-navy-800 rounded-2xl shadow-xl border border-navy-700 p-6 group hover:border-gold-500/50 transition-all">
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Entity Value</span>
+                                    <span className="text-3xl font-black text-white">{fmt(latest.kpis.companyValue)}</span>
                                 </div>
                             </div>
                         ) : (
-                            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center bg-slate-50/50">
-                                <div className="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <FileText className="w-6 h-6 text-slate-400" />
-                                </div>
-                                <h3 className="text-slate-700 font-medium">No Historical Data</h3>
-                                <p className="text-slate-500 text-sm mt-1">Run Quarter 1 to generate your first set of management reports.</p>
+                            <div className="bg-navy-800 rounded-2xl border border-dashed border-navy-700 p-12 text-center">
+                                <FileText className="w-12 h-12 text-navy-700 mx-auto mb-4" />
+                                <h3 className="text-slate-400 font-bold uppercase text-xs tracking-widest">Awaiting Initial Reports</h3>
+                                <p className="text-slate-500 text-xs mt-2 uppercase">Complete the first fiscal period to view analytics.</p>
                             </div>
                         )}
                     </section>
 
-                    {/* Section 3: Decision Entry */}
-                    <section>
-                        <div className="flex items-center gap-2 mb-4">
-                            <FileText className="w-5 h-5 text-primary-500" />
-                            <h2 className="text-lg font-semibold text-slate-800">Quarter {currentQuarter} Decisions</h2>
+                    {/* Section 3: Decision Input */}
+                    <section className="space-y-6">
+                        <div className="flex items-center gap-3">
+                            <FileText className="w-5 h-5 text-gold-500" />
+                            <h2 className="text-sm font-black text-slate-200 uppercase tracking-widest">Operational Directives (Q{currentQuarter})</h2>
                         </div>
 
                         {gameStatus !== 'inputting' ? (
-                            <div className="bg-white rounded-xl border border-blue-200 p-8 text-center bg-blue-50/50 shadow-sm">
-                                <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                            <div className="bg-navy-800 rounded-2xl border border-navy-600 p-20 text-center shadow-2xl relative overflow-hidden group">
+                                <div className="absolute inset-0 bg-gold-500/5 animate-pulse" />
+                                <div className="relative z-10">
+                                    <div className="w-16 h-16 bg-navy-900 border-2 border-gold-500/30 text-gold-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                                        <div className="w-8 h-8 border-4 border-gold-500 border-t-transparent rounded-full animate-spin" />
+                                    </div>
+                                    <h3 className="text-2xl font-black text-white uppercase italic">Simulation in Progress</h3>
+                                    <p className="text-slate-400 text-xs font-bold mt-2 uppercase tracking-widest">Directives locked. Processor computing market results.</p>
                                 </div>
-                                <h3 className="text-blue-900 font-bold text-lg">Simulation Running</h3>
-                                <p className="text-blue-700 text-sm mt-1">Please wait for the administrator to finish processing the quarter.</p>
                             </div>
                         ) : hasSubmitted ? (
-                            <div className="bg-white rounded-xl border border-emerald-200 p-8 text-center bg-emerald-50/50 shadow-sm">
-                                <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <CheckCircle className="w-6 h-6" />
+                            <div className="bg-emerald-500/5 rounded-2xl border border-emerald-500/20 p-20 text-center shadow-2xl relative overflow-hidden group">
+                                <div className="relative z-10">
+                                    <div className="w-16 h-16 bg-navy-900 border-2 border-emerald-500/30 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                                        <CheckCircle className="w-8 h-8" />
+                                    </div>
+                                    <h3 className="text-2xl font-black text-white uppercase italic">Directives Transmitted</h3>
+                                    <p className="text-slate-400 text-xs font-bold mt-2 uppercase tracking-widest">Awaiting clearing by system administrator.</p>
                                 </div>
-                                <h3 className="text-emerald-900 font-bold text-lg">Decisions Submitted</h3>
-                                <p className="text-emerald-700 text-sm mt-1">Waiting for other teams and the administrator to run the quarter.</p>
                             </div>
                         ) : (
-                            <div className="mt-4">
+                            <div className="bg-navy-800 rounded-3xl shadow-2xl overflow-hidden border border-navy-700 p-1">
                                 <DecisionForm embedded={true} />
                             </div>
                         )}
                     </section>
+
+                    <footer className="pt-12 border-t border-navy-800 text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] text-center pb-20">
+                        TOPAZ-Vbe Systems Management Protocol © 2026
+                    </footer>
 
                 </main>
             </div>
