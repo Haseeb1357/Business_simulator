@@ -221,7 +221,7 @@ export interface GameConfig {
 export function getDefaultDecision(): TeamDecision {
     return {
         companyInfo: {
-            simulationCode: "Topaz",
+            simulationCode: "Bhutto",
             year: "1",
             quarter: "1",
             groupNumber: "1",

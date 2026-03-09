@@ -13,6 +13,7 @@ const Intelligence: React.FC = () => {
     const currentQuarter = useSimulationStore(s => s.currentQuarter);
     const allResults = useSimulationStore(s => s.allResults);
     const gameConfig = useSimulationStore(s => s.gameConfig);
+    const getTeamLatestResult = useSimulationStore(s => s.getTeamLatestResult);
 
     const latestQ = Math.max(0, currentQuarter - 1);
 
@@ -84,88 +85,249 @@ const Intelligence: React.FC = () => {
 
         const { year, qtr } = calculateYearAndQuarter(reportResult.quarter);
         const d = reportResult.decisions;
-        const prev = reportResult.previousCarryForward;
         const cf = reportResult.carryForward;
         const pnl = reportResult.profitAndLoss;
         const bs = reportResult.balanceSheet;
+        const s = reportResult.stats;
+
+        const SectionHeader = ({ title }: { title: string }) => (
+            <div className="bg-slate-100 border border-slate-300 py-1.5 px-3 mb-4">
+                <h2 className="text-xs font-black uppercase tracking-widest text-[#000080]">{title}</h2>
+            </div>
+        );
+
+        const Label = ({ text }: { text: string }) => <td className="text-left font-medium py-0.5 text-[#333]">{text}</td>;
+        const Val = ({ n, bold }: { n: any, bold?: boolean }) => <td className={`text-right tabular-nums ${bold ? 'font-bold' : ''}`}>{n}</td>;
 
         return (
-            <div className="bg-white text-black p-8 rounded shadow-2xl max-w-5xl mx-auto overflow-x-auto text-[11px] font-sans leading-tight">
-                {/* Internal Report Content (preserving original replica style) */}
-                <div className="mb-6 border-b-2 border-black pb-2">
-                    <h1 className="text-2xl font-bold mb-1 uppercase tracking-wider">The Topaz Management Simulation Report</h1>
-                    <div className="font-semibold text-sm">History — Group {team?.companyNumber} Company {team?.companyNumber}</div>
-                    <div className="font-semibold text-sm">Year {year} Quarter {qtr} (Simulation Q{reportResult.quarter})</div>
+            <div className="bg-white text-black p-10 shadow-2xl max-w-5xl mx-auto overflow-x-auto text-[10px] font-sans leading-none border-t-8 border-[#000080] print:shadow-none print:p-0">
+                <div className="mb-8 flex justify-between items-start border-b border-black pb-4">
+                    <div>
+                        <h1 className="text-2xl font-black mb-1 uppercase tracking-tighter text-[#000080]">THE BHUTTO & CO. MANAGEMENT SIMULATION REPORT</h1>
+                        <div className="font-bold text-sm text-slate-700">History — Group 1 Company {team?.companyNumber}</div>
+                        <div className="font-bold text-sm text-slate-700">History — Year {year} Quarter {qtr} (Simulation Q{reportResult.quarter})</div>
+                    </div>
                 </div>
 
-                {/* Simplified Grid for the Report Content */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                    {/* Decisions */}
-                    <div className="space-y-4">
-                        <h2 className="font-bold text-xs bg-gray-100 border border-gray-300 p-1">DECISIONS IN EFFECT</h2>
-                        <table className="w-full text-right border-collapse">
+                {/* Section 1: Decisions */}
+                <SectionHeader title={`DECISIONS in effect for Year ${year} Quarter ${qtr}`} />
+                <div className="grid grid-cols-12 gap-8 mb-10">
+                    <div className="col-span-7">
+                        <table className="w-full">
                             <thead>
-                                <tr className="border-b border-black">
-                                    <th className="text-left py-1">Item</th>
-                                    <th className="w-16">P1</th>
-                                    <th className="w-16">P2</th>
-                                    <th className="w-16">P3</th>
-                                </tr>
+                                <tr className="border-b border-slate-300"><th className="text-left py-1"></th><th className="w-14">Prod 1</th><th className="w-14">Prod 2</th><th className="w-14">Prod 3</th></tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                <tr><Label text="Major Product Improvements" /><Val n={d.productImprovements[0] ? 1 : 0} /><Val n={d.productImprovements[1] ? 1 : 0} /><Val n={d.productImprovements[2] ? 1 : 0} /></tr>
+                                <tr><Label text="Prices (£): Export Area" /><Val n={d.prices.exportMarket[0]} /><Val n={d.prices.exportMarket[1]} /><Val n={d.prices.exportMarket[2]} /></tr>
+                                <tr><Label text="Home Areas" /><Val n={d.prices.homeMarkets[0]} /><Val n={d.prices.homeMarkets[1]} /><Val n={d.prices.homeMarkets[2]} /></tr>
+                                <tr><Label text="Advertising Exp (£'000)" /><td colSpan={3}></td></tr>
+                                <tr><Label text="  Trade Press" /><Val n={d.promotion.tradePress[0]} /><Val n={d.promotion.tradePress[1]} /><Val n={d.promotion.tradePress[2]} /></tr>
+                                <tr><Label text="  Advertising Support" /><Val n={d.promotion.advertisingSupport[0]} /><Val n={d.promotion.advertisingSupport[1]} /><Val n={d.promotion.advertisingSupport[2]} /></tr>
+                                <tr><Label text="  Merchandising" /><Val n={d.promotion.merchandising[0]} /><Val n={d.promotion.merchandising[1]} /><Val n={d.promotion.merchandising[2]} /></tr>
+                                <tr><Label text="Prod Assembly Times (mins)" /><Val n={d.assemblyTime[0]} /><Val n={d.assemblyTime[1]} /><Val n={d.assemblyTime[2]} /></tr>
+                            </tbody>
+                        </table>
+                        <div className="mt-4 border-t border-slate-200 pt-2">
+                            <table className="w-full">
+                                <tbody>
+                                    <tr>
+                                        <Label text="Salespeople allocated to:" />
+                                        <td className="w-12 text-center text-[8px] font-bold">Export</td>
+                                        <td className="w-12 text-center text-[8px] font-bold">South</td>
+                                        <td className="w-12 text-center text-[8px] font-bold">West</td>
+                                        <td className="w-12 text-center text-[8px] font-bold">North</td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <Val n={d.salesforceAllocated.exportArea} />
+                                        <Val n={d.salesforceAllocated.southArea} />
+                                        <Val n={d.salesforceAllocated.westArea} />
+                                        <Val n={d.salesforceAllocated.northArea} />
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div className="col-span-5 space-y-1">
+                        <table className="w-full">
+                            <tbody>
+                                <tr><Label text="Dividend % per £1 Share" /><Val n={d.dividendRate} /></tr>
+                                <tr><Label text="Credit Days Allowed" /><Val n={d.daysCreditAllowed} /></tr>
+                                <tr><Label text="Vehicles to Buy" /><Val n={d.vansToBuy} /></tr>
+                                <tr><Label text="Vehicles to Sell" /><Val n={d.vansToSell} /></tr>
+                                <tr><Label text="Info: on company activities" /><Val n={d.informationWanted.otherCompanies ? 1 : 0} /></tr>
+                                <tr><Label text="Info: on Market Shares" /><Val n={d.informationWanted.marketShares ? 1 : 0} /></tr>
+
+                                <tr className="h-4"></tr>
+                                <tr><Label text="Product Development (£'000)" /><Val n={d.researchExpenditure} bold /></tr>
+                                <tr className="h-4"></tr>
+
+                                <tr className="font-bold border-b border-slate-200"><Label text="Personnel:" /><td>Recruit</td><td>Dismiss</td><td>Train</td></tr>
+                                <tr><Label text="Salespeople" /><td>{d.salesforce.recruit}</td><td>{d.salesforce.dismiss}</td><td>{d.salesforce.train}</td></tr>
+                                <tr><Label text="Assembly Workers" /><td>{d.assemblyWorkers.recruit}</td><td>{d.assemblyWorkers.dismiss}</td><td>{d.assemblyWorkers.train}</td></tr>
+
+                                <tr className="h-4"></tr>
+                                <tr className="font-bold border-b border-slate-200"><Label text="Materials to Order:" /><td>Units</td><td>Supplier</td><td>Dels</td></tr>
+                                <tr><td></td><td>{num(d.rawMaterial.unitsToOrder)}</td><td>{d.rawMaterial.supplierNo}</td><td>{d.rawMaterial.deliveries}</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {/* Section 2: Resources & Movements */}
+                <div className="grid grid-cols-2 gap-12 mb-10">
+                    <div>
+                        <SectionHeader title="AVAILABILITY and USE OF RESOURCES" />
+                        <table className="w-full">
+                            <tbody className="divide-y divide-slate-100">
+                                <tr><Label text="Machines Available Last Quarter" /><Val n={cf.assets.machines} /></tr>
+                                <tr><Label text="Machines Available for Next Quarter" /><Val n={cf.assets.machines} bold /></tr>
+                                <tr><Label text="Vehicles Available Last Quarter" /><Val n={cf.assets.vehicles} /></tr>
+                                <tr className="h-4"></tr>
+                                <tr className="font-bold"><Label text="Assembly Workers Hours:" /><td colSpan={2}></td></tr>
+                                <tr><Label text="  Total Hours Available Last Quarter" /><Val n={num(cf.staffing.productionWorkers * 480)} /></tr>
+                                <tr><Label text="  Total Hours Worked Last Quarter" /><Val n={num(cf.staffing.productionWorkers * 420)} /></tr>
+                                <tr className="font-bold border-t border-slate-200"><Label text="Material Units Used and Available" /><td></td></tr>
+                                <tr><Label text="  Opening Stock Available" /><Val n={num(reportResult.previousCarryForward.inventory.rawMaterials)} /></tr>
+                                <tr><Label text="  Delivered Last Quarter" /><Val n={num(d.rawMaterial.unitsToOrder)} /></tr>
+                                <tr><Label text="  Closing Stock at End of Qtr" /><Val n={num(cf.inventory.rawMaterials)} bold /></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <SectionHeader title="PRODUCT MOVEMENTS and AVAILABILITY" />
+                        <table className="w-full">
+                            <thead className="border-b border-slate-300">
+                                <tr><th className="text-left font-bold">Quantities</th><th className="text-right">All Products</th></tr>
                             </thead>
                             <tbody>
-                                <tr><td className="text-left py-0.5">Price (Home)</td><td>{d.prices.homeMarkets[0]}</td><td>{d.prices.homeMarkets[1]}</td><td>{d.prices.homeMarkets[2]}</td></tr>
-                                <tr><td className="text-left py-0.5">Adv Support</td><td>{d.promotion.advertisingSupport[0]}</td><td>{d.promotion.advertisingSupport[1]}</td><td>{d.promotion.advertisingSupport[2]}</td></tr>
-                                <tr><td className="text-left py-0.5">Merch</td><td>{d.promotion.merchandising[0]}</td><td>{d.promotion.merchandising[1]}</td><td>{d.promotion.merchandising[2]}</td></tr>
-                                <tr className="border-t border-gray-200"><td className="text-left font-bold">Res Exp</td><td colSpan={3} className="text-right">{d.researchExpenditure}</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Resources */}
-                    <div className="space-y-4">
-                        <h2 className="font-bold text-xs bg-gray-100 border border-gray-300 p-1">RESOURCES USED</h2>
-                        <table className="w-full text-right">
-                            <tbody>
-                                <tr><td className="text-left py-0.5">Machines</td><td className="font-bold">{cf.assets.machines}</td></tr>
-                                <tr><td className="text-left py-0.5">Workers</td><td className="font-bold">{cf.staffing.productionWorkers}</td></tr>
-                                <tr><td className="text-left py-0.5">Stock FG</td><td>{num(cf.inventory.finishedGoods)}</td></tr>
+                                <tr className="bg-slate-50"><Label text="Produced" /><Val n={num(s.actualSalesArea1 + s.actualSalesArea2 + cf.inventory.finishedGoods)} bold /></tr>
+                                <tr><Label text="Rejected (Defects)%" /><Val n={`${s.defectsPercent.toFixed(1)}%`} /></tr>
+                                <tr className="h-2"></tr>
+                                <tr className="font-bold border-b border-slate-200"><Label text="Home Sales to:" /><Val n={num(s.actualSalesArea1)} /></tr>
+                                <tr><Label text="Export Sales to:" /><Val n={num(s.actualSalesArea2)} /></tr>
+                                <tr className="h-4"></tr>
+                                <tr className="bg-slate-50 font-bold"><Label text="Warehouse Stock at End of Quarter" /><td></td></tr>
+                                <tr><Label text="  Total Finished Goods" /><Val n={num(cf.inventory.finishedGoods)} bold /></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {/* P&L */}
-                    <div className="col-span-1 md:col-span-2">
-                        <h3 className="font-bold border-b-2 border-black mb-2 pb-1">PROFIT & LOSS Account (£)</h3>
-                        <table className="w-full text-right">
+                {/* Section 3: Accounts */}
+                <SectionHeader title="ACCOUNTS" />
+                <div className="grid grid-cols-3 gap-8 mb-10 border border-slate-300 p-4">
+                    {/* Overheads */}
+                    <div>
+                        <h3 className="font-bold border-b border-black mb-3 pb-1 text-[9px] uppercase tracking-wide">Overhead Cost Analysis (£)</h3>
+                        <table className="w-full">
                             <tbody>
-                                <tr className="font-bold"><td className="text-left uppercase">Revenue</td><td>{money(pnl.salesRevenue)}</td></tr>
-                                <tr><td className="text-left pl-4">Cost of Goods Sold</td><td>({num(pnl.costOfGoodsSold)})</td></tr>
-                                <tr className="border-t border-gray-300 font-bold bg-gray-50">
-                                    <td className="text-left pr-4">Gross Profit</td><td>{money(pnl.grossProfit)}</td>
-                                </tr>
-                                <tr><td className="text-left pl-4">Overheads</td><td>({num(pnl.totalOverheads)})</td></tr>
-                                <tr><td className="text-left pl-4">Interest</td><td>({num(pnl.interestPaid)})</td></tr>
-                                <tr><td className="text-left pl-4">Tax</td><td>({num(pnl.tax)})</td></tr>
-                                <tr className="border-y-2 border-black font-bold text-sm bg-gray-100">
-                                    <td className="text-left py-1 uppercase">Net Profit</td><td>{money(pnl.netProfit)}</td>
-                                </tr>
+                                <tr><Label text="Advertising" /><Val n={num(pnl.advertisingCost)} /></tr>
+                                <tr><Label text="Sales Force / Office" /><Val n={num(pnl.salesForceCost)} /></tr>
+                                <tr><Label text="Sales Commission" /><Val n={num(pnl.commissionCost)} /></tr>
+                                <tr><Label text="Admin / Personnel" /><Val n={num(pnl.adminSalaries)} /></tr>
+                                <tr><Label text="Product Research" /><Val n={num(pnl.rdCost)} /></tr>
+                                <tr><Label text="Quality Control (QC)" /><Val n={num(pnl.qcCost)} /></tr>
+                                <tr className="border-t-2 border-black font-black"><Label text="TOTAL OVERHEADS" /><Val n={num(pnl.totalOverheads)} /></tr>
                             </tbody>
                         </table>
                     </div>
 
-                    {/* Balance Sheet Summary */}
-                    <div>
-                        <h3 className="font-bold border-b-2 border-black mb-2 pb-1">BALANCE SHEET (£)</h3>
-                        <table className="w-full text-right">
+                    {/* P&L */}
+                    <div className="border-x border-slate-200 px-4">
+                        <h3 className="font-bold border-b border-black mb-3 pb-1 text-[9px] uppercase tracking-wide">Profit and Loss Account (£)</h3>
+                        <table className="w-full">
                             <tbody>
-                                <tr><td className="text-left">Fixed Assets</td><td>{num(bs.fixedAssets.totalFixed)}</td></tr>
-                                <tr><td className="text-left">Net Current</td><td>{num(bs.netCurrentAssets)}</td></tr>
-                                <tr className="border-t-2 border-black font-bold"><td className="text-left uppercase">Net Assets</td><td>{money(bs.netAssets)}</td></tr>
+                                <tr className="font-black text-[#000080]"><Label text="SALES REVENUE" /><Val n={money(pnl.salesRevenue)} /></tr>
+                                <tr><Label text="Opening Stock Value" /><Val n={num(pnl.openingStockValue)} /></tr>
+                                <tr><Label text="Materials Purchased" /><Val n={num(pnl.materialsPurchased)} /></tr>
+                                <tr><Label text="Assembly/Wages" /><Val n={num(pnl.productionWages)} /></tr>
+                                <tr><Label text="Depreciation" /><Val n={num(pnl.depreciation)} /></tr>
+                                <tr><Label text="Less Closing Stock Value" /><Val n={`(${num(pnl.lessClosingStockValue)})`} /></tr>
+                                <tr className="border-t border-slate-400 font-bold"><Label text="COST OF GOODS SOLD" /><Val n={num(pnl.costOfGoodsSold)} /></tr>
+                                <tr className="border-t-2 border-black font-black bg-slate-100"><Label text="GROSS PROFIT" /><Val n={money(pnl.grossProfit)} /></tr>
+                                <tr><Label text="Interest Paid" /><Val n={`(${num(pnl.interestPaid)})`} /></tr>
+                                <tr><Label text="Overheads" /><Val n={`(${num(pnl.totalOverheads)})`} /></tr>
+                                <tr className="border-t-2 border-black font-black text-sm"><Label text="NET PROFIT/LOSS" /><Val n={money(pnl.netProfit)} /></tr>
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Balance Sheet */}
+                    <div>
+                        <h3 className="font-bold border-b border-black mb-3 pb-1 text-[9px] uppercase tracking-wide">Balance Sheet (£)</h3>
+                        <table className="w-full">
+                            <tbody>
+                                <tr className="font-bold border-b border-slate-200"><Label text="Assets" /><td></td></tr>
+                                <tr><Label text="Value of Property/Plant" /><Val n={num(bs.fixedAssets.plant)} /></tr>
+                                <tr><Label text="Value of Machines" /><Val n={num(bs.fixedAssets.machines)} /></tr>
+                                <tr><Label text="Value of Vehicles" /><Val n={num(bs.fixedAssets.vehicles)} /></tr>
+                                <tr><Label text="Value of Stock" /><Val n={num(bs.currentAssets.stockValuation)} /></tr>
+                                <tr><Label text="Debtors" /><Val n={num(bs.currentAssets.debtors)} /></tr>
+                                <tr><Label text="Cash Invested" /><Val n={num(bs.currentAssets.cash)} /></tr>
+
+                                <tr className="font-bold border-b border-slate-200 pt-3"><Label text="Liabilities" /><td></td></tr>
+                                <tr><Label text="Creditors" /><Val n={num(bs.currentLiabilities.creditors)} /></tr>
+                                <tr><Label text="Bank Overdraft" /><Val n={num(bs.currentLiabilities.overdraft)} /></tr>
+
+                                <tr className="border-t border-black font-black text-[12px]"><Label text="Net Assets" /><Val n={money(bs.netAssets)} /></tr>
+                                <tr className="h-2"></tr>
+                                <tr><Label text="Ordinary Capital" /><Val n={num(bs.capital.shareCapital)} /></tr>
+                                <tr><Label text="Reserves" /><Val n={num(bs.capital.reserves)} /></tr>
+                                <tr className="border-t-2 border-black font-black"><Label text="TOTAL FUNDING" /><Val n={money(bs.capital.totalCapital)} /></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {/* Section 4: Business Intelligence */}
+                <SectionHeader title="BUSINESS INTELLIGENCE" />
+                <div className="bg-slate-50 p-4 border border-slate-200 mb-10 overflow-x-auto">
+                    <table className="w-full text-[9px]">
+                        <thead>
+                            <tr className="border-b-2 border-slate-300">
+                                <th className="text-left py-2 font-black uppercase">Company Status / Free Info</th>
+                                {Array.from({ length: 8 }).map((_, i) => <th key={i} className="w-12 text-center text-slate-500 font-bold">{i + 1}</th>)}
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200">
+                            <tr>
+                                <Label text="Market Share (%)" />
+                                {Array.from({ length: 8 }).map((_, i) => {
+                                    const latestResults = getTeamLatestResult(i + 1);
+                                    return <td key={i} className="text-center tabular-nums">{latestResults?.kpis.marketShare.toFixed(1) || '6.9'}</td>;
+                                })}
+                            </tr>
+                            <tr>
+                                <Label text="Quality Rating (%)" />
+                                {Array.from({ length: 8 }).map((_, i) => {
+                                    const latestResults = getTeamLatestResult(i + 1);
+                                    return <td key={i} className="text-center tabular-nums">{latestResults?.stats.qualityRatingPercent.toFixed(0) || '70'}</td>;
+                                })}
+                            </tr>
+                            <tr>
+                                <Label text="Area 1 Actual Sales" />
+                                {Array.from({ length: 8 }).map((_, i) => {
+                                    const latestResults = getTeamLatestResult(i + 1);
+                                    return <td key={i} className="text-center tabular-nums">{num(latestResults?.stats.actualSalesArea1) || '0'}</td>;
+                                })}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Section 5: Economic Information */}
+                <SectionHeader title="ECONOMIC INFORMATION" />
+                <div className="grid grid-cols-2 gap-x-12 p-3 bg-slate-50 border border-slate-200">
+                    <div className="flex justify-between items-center"><span className="text-slate-500 font-bold">GDP Growth Rate (%)</span><span className="font-black">2.5%</span></div>
+                    <div className="flex justify-between items-center"><span className="text-slate-500 font-bold">Unemployment Rate (%)</span><span className="font-black">5%</span></div>
+                    <div className="flex justify-between items-center"><span className="text-slate-500 font-bold">Central Bank Interest Rate (%)</span><span className="font-black">5%</span></div>
+                    <div className="flex justify-between items-center"><span className="text-slate-500 font-bold">Base Material Price (£ per '000)</span><span className="font-black">£50</span></div>
+                </div>
+
+                <div className="mt-8 text-[8px] text-slate-400 text-center uppercase tracking-widest italic">
+                    © TOPAZ-Vbe is an interactive Business Simulation developed by Edit Systems Ltd.
                 </div>
             </div>
         );

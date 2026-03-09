@@ -80,8 +80,8 @@ const DecisionForm: React.FC<DecisionFormProps> = ({ embedded }) => {
             <div className="bg-[#c0c0c0] win-border-outset w-full max-w-5xl flex flex-col mb-4">
                 <div className="bg-[#000080] text-white font-bold p-1 flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                        <span className="text-xs border p-0.5 bg-[#c0c0c0] text-black">Topaz</span>
-                        <span>Topaz_Vbe Team Decision Sheet - {team?.name}</span>
+                        <span className="text-xs border p-0.5 bg-[#c0c0c0] text-black italic font-bold">Bhutto</span>
+                        <span>Bhutto & Co. Team Decision Sheet - {team?.name}</span>
                     </div>
                 </div>
 

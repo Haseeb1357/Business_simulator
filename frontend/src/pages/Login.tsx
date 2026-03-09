@@ -27,8 +27,8 @@ const Login = () => {
                     ))}
                 </div>
                 <div className="relative z-10 max-w-lg text-center">
-                    <h1 className="text-6xl font-black mb-4 leading-tight tracking-tighter italic">
-                        <span className="text-gold-500">CUI</span> SIMULATION
+                    <h1 className="text-6xl font-black mb-4 leading-tight tracking-tighter italic text-white">
+                        <span className="text-gold-500">BHUTTO</span> & CO.
                     </h1>
                     <p className="text-xl text-slate-400 mb-12 font-bold tracking-widest uppercase">Elite Strategy Platform</p>
                     <div className="space-y-6 text-slate-300 text-sm text-left bg-navy-900/50 p-8 rounded-3xl border border-navy-700 backdrop-blur-md">

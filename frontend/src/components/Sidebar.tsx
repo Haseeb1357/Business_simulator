@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { useSimulationStore } from '../store/simulationStore';
 import {
     LayoutDashboard, Trophy,
-    Settings, Menu, X, FileText, Users
+    Settings, Menu, X, Users
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -26,7 +26,7 @@ const Sidebar = () => {
         <div className="flex flex-col h-full bg-navy-800 border-r border-navy-700">
             <div className="flex shrink-0 items-center px-6 py-6 justify-between">
                 <h1 className="text-xl font-black tracking-tighter text-white uppercase italic">
-                    <span className="text-gold-500">CUI</span> SIMULATION
+                    <span className="text-gold-500">BHUTTO</span> & CO.
                 </h1>
                 <button onClick={() => setMobileOpen(false)} className="lg:hidden text-slate-400 hover:text-white">
                     <X className="h-5 w-5" />
