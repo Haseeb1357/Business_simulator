@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import Sidebar from '../components/Sidebar';
+import Navbar from '../components/Navbar';
 import { useSimulationStore } from '../store/simulationStore';
-import { Play, RefreshCw, RotateCcw, CheckCircle2, AlertTriangle, Clock, X, Settings, AlertCircle, Users, Pause, Trash2, ChevronRight, Search, Download, Cpu, Database, Shield } from 'lucide-react';
+import { Play, RefreshCw, RotateCcw, CheckCircle2, AlertTriangle, Clock, X, Settings, AlertCircle, Users } from 'lucide-react';
 
 const AdminControl = () => {
+    // ... rest of component ...
     const { currentQuarter, teams, submittedTeams, processQuarter, resetGame, processingLog, gameConfig, updateGameConfig, addTeam, removeTeam, addNewsItem } = useSimulationStore();
     const [isProcessing, setIsProcessing] = useState(false);
     const [logLines, setLogLines] = useState<string[]>([]);
@@ -52,10 +53,10 @@ const AdminControl = () => {
     };
 
     return (
-        <div className="flex h-screen overflow-hidden bg-navy-900">
-            <Sidebar />
-            <div className="flex-1 flex flex-col overflow-y-auto pt-16 lg:pt-0 lg:pl-72">
-                <main className="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-8">
+        <div className="min-h-screen bg-navy-900 pb-20">
+            <Navbar />
+            <div className="pt-24 px-4 sm:px-6 lg:px-8">
+                <main className="max-w-7xl mx-auto w-full space-y-8">
                     <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 border-b border-navy-800 pb-8">
                         <div>
                             <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3">

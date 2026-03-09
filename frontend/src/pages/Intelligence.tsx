@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import Sidebar from '../components/Sidebar';
+import Navbar from '../components/Navbar';
 import { useSimulationStore } from '../store/simulationStore';
 import { ArrowUpRight, ArrowDownRight, Minus, FileText, Trophy, BarChart2 } from 'lucide-react';
 import {
@@ -327,159 +327,191 @@ const Intelligence: React.FC = () => {
                 </div>
 
                 <div className="mt-8 text-[8px] text-slate-400 text-center uppercase tracking-widest italic">
-                    © TOPAZ-Vbe is an interactive Business Simulation developed by Edit Systems Ltd.
+                    © Simulator is an interactive Business Simulation developed by Edit Systems Ltd.
                 </div>
             </div>
         );
     };
 
     return (
-        <div className="flex h-screen overflow-hidden bg-navy-900">
-            <Sidebar />
+        <div className="min-h-screen bg-navy-900 pb-20">
+            <Navbar />
 
-            <div className="flex-1 flex flex-col overflow-y-auto lg:pl-72 pt-16 lg:pt-0">
-                <main className="flex-1 p-6 max-w-7xl mx-auto w-full space-y-8">
-
-                    {/* HEADER */}
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-navy-800 pb-6">
+            <div className="pt-24 px-4 sm:px-6 lg:px-8">
+                <main className="max-w-7xl mx-auto w-full space-y-12">
+                    {/* Header */}
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 border-b border-navy-800 pb-8">
                         <div>
-                            <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-2">
-                                <Trophy className="text-gold-500 w-8 h-8" />
-                                Intelligence & Results
+                            <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">
+                                Performance <span className="text-gold-500">Intelligence</span>
                             </h1>
-                            <p className="text-slate-400 mt-1">Global ranking and detailed quarterly performance reports</p>
+                            <p className="text-slate-400 mt-2 font-bold tracking-wide uppercase text-xs">
+                                Comparative Analytics & Quantitative Results
+                            </p>
                         </div>
-                        {latestQ > 0 && (
-                            <div className="bg-navy-800 border border-navy-700 px-4 py-2 rounded-xl shadow-lg">
-                                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Your Global Rank</span>
-                                <p className="text-2xl font-black text-gold-500 mt-0.5">#{rankings.findIndex(r => r.id === activeTeamId) + 1} <span className="text-xs font-normal text-slate-400">of {teams.length}</span></p>
-                            </div>
-                        )}
+
+                        <div className="flex bg-navy-800 p-1 rounded-2xl border border-navy-700">
+                            {[
+                                { id: 'ranking', label: 'Leaderboard', icon: Trophy },
+                                { id: 'reports', label: 'Quarterly Reports', icon: BarChart2 }
+                            ].map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab.id ? 'bg-navy-900 text-gold-500 shadow-xl border border-navy-700' : 'text-slate-500 hover:text-slate-300'}`}
+                                >
+                                    <tab.icon className="w-4 h-4" />
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
-                    {/* TOP SECTION: LEADERBOARD & CHARTS */}
-                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-
-                        {/* SUB-NAV for Ranking/Charts */}
-                        <div className="xl:col-span-2 space-y-4">
-                            <div className="flex items-center gap-2 bg-navy-800 p-1.5 rounded-lg w-fit border border-navy-700">
-                                <button onClick={() => setActiveTab('ranking')} className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${activeTab === 'ranking' ? 'bg-navy-700 text-gold-500 shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}>Ranking</button>
-                                <button onClick={() => setActiveTab('charts')} className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${activeTab === 'charts' ? 'bg-navy-700 text-gold-500 shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}>Trend Charts</button>
-                            </div>
-
-                            {latestQ < 1 ? (
-                                <div className="bg-navy-800 rounded-2xl border border-navy-700 p-12 text-center shadow-xl">
-                                    <div className="w-16 h-16 bg-navy-900 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">🏆</div>
-                                    <h3 className="text-xl font-bold text-slate-200">No Historical Data Yet</h3>
-                                    <p className="text-slate-400 mt-2 max-w-xs mx-auto">Complete the first quarter simulation to unlock the global leaderboard and performance analytics.</p>
+                    {activeTab === 'ranking' ? (
+                        <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            {/* Ranking Table */}
+                            <div className="bg-navy-800 rounded-3xl border border-navy-700 shadow-2xl overflow-hidden">
+                                <div className="px-6 py-4 bg-navy-900/50 border-b border-navy-700 flex justify-between items-center">
+                                    <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Team Performance Rankings</h2>
+                                    <div className="flex items-center gap-2 text-[10px] font-black text-slate-500">
+                                        PHASE Q{latestQ}
+                                    </div>
                                 </div>
-                            ) : activeTab === 'ranking' ? (
-                                <div className="bg-navy-800 rounded-2xl border border-navy-700 shadow-xl overflow-hidden">
+                                <div className="overflow-x-auto">
                                     <table className="w-full text-left">
-                                        <thead className="bg-navy-900/50">
-                                            <tr>
-                                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Rank</th>
-                                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Team Name</th>
-                                                <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-widest">Company Value</th>
-                                                <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-widest">Net Profit</th>
+                                        <thead>
+                                            <tr className="bg-navy-900/30">
+                                                <th className="px-8 py-4 text-[10px] font-black text-slate-600 uppercase tracking-widest">Rank</th>
+                                                <th className="px-8 py-4 text-[10px] font-black text-slate-600 uppercase tracking-widest">Entity</th>
+                                                <th className="px-8 py-4 text-[10px] font-black text-slate-600 uppercase tracking-widest text-right">Net Profit</th>
+                                                <th className="px-8 py-4 text-[10px] font-black text-slate-600 uppercase tracking-widest text-right">Market Share</th>
+                                                <th className="px-8 py-4 text-[10px] font-black text-slate-600 uppercase tracking-widest text-right">Cumulative Value</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-navy-700/50">
-                                            {rankings.map((r, i) => (
-                                                <tr key={r.id} className={`group transition-all hover:bg-navy-700/30 ${r.id === activeTeamId ? 'bg-navy-700/50' : ''}`}>
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <span className={`text-xl font-black ${i === 0 ? 'text-gold-500' : i === 1 ? 'text-slate-300' : i === 2 ? 'text-amber-600' : 'text-slate-500'}`}>{i + 1}</span>
-                                                            {getMovement(r.companyValue, r.prevCompanyValue)}
+                                            {rankings.map((team, idx) => (
+                                                <tr key={team.id} className={`hover:bg-navy-700/30 transition-colors ${team.id === activeTeamId ? 'bg-gold-500/5' : ''}`}>
+                                                    <td className="px-8 py-6">
+                                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs ${idx === 0 ? 'bg-gold-500 text-navy-900 shadow-lg shadow-gold-500/20' : idx === 1 ? 'bg-slate-300 text-navy-900' : idx === 2 ? 'bg-amber-700 text-white' : 'bg-navy-900 text-slate-500 border border-navy-700'}`}>
+                                                            {idx + 1}
                                                         </div>
                                                     </td>
-                                                    <td className="px-6 py-4">
-                                                        <span className="font-bold text-slate-100 group-hover:text-gold-500 transition-colors uppercase text-sm tracking-wide">{r.name}</span>
-                                                        {r.id === activeTeamId && <span className="ml-2 py-0.5 px-1.5 bg-gold-500/10 text-gold-500 text-[10px] font-black rounded border border-gold-500/20">YOU</span>}
+                                                    <td className="px-8 py-6">
+                                                        <span className="text-sm font-black text-white uppercase tracking-tight block">{team.name}</span>
+                                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Unit {team.companyNumber}</span>
                                                     </td>
-                                                    <td className="px-6 py-4 text-right tabular-nums font-mono text-slate-200">
-                                                        £{(r.companyValue / 1000000).toFixed(2)}M
+                                                    <td className="px-8 py-6 text-right tabular-nums">
+                                                        <span className={`text-sm font-black ${team.netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                                            {team.netProfit >= 0 ? `+£${team.netProfit.toLocaleString()}` : `-£${Math.abs(team.netProfit).toLocaleString()}`}
+                                                        </span>
                                                     </td>
-                                                    <td className={`px-6 py-4 text-right tabular-nums font-mono font-bold ${r.netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                                        {money(r.netProfit)}
+                                                    <td className="px-8 py-6 text-right tabular-nums">
+                                                        <span className="text-sm font-black text-slate-300">{team.marketShare.toFixed(1)}%</span>
+                                                    </td>
+                                                    <td className="px-8 py-6 text-right">
+                                                        <div className="flex items-center justify-end gap-3">
+                                                            <div className="flex flex-col items-end">
+                                                                <span className="text-sm font-black text-white italic">£{team.companyValue.toLocaleString()}</span>
+                                                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Market Cap</span>
+                                                            </div>
+                                                            <div className="bg-navy-900 p-2 rounded-lg border border-navy-700 shadow-inner">
+                                                                {getMovement(team.companyValue, team.prevCompanyValue)}
+                                                            </div>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}
                                         </tbody>
                                     </table>
                                 </div>
-                            ) : (
-                                <div className="bg-navy-800 rounded-2xl border border-navy-700 p-6 shadow-xl h-[400px]">
-                                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                        <BarChart2 className="w-4 h-4" /> Market Capitalization (£'000)
-                                    </h3>
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={companyValueData}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#233554" vertical={false} />
-                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} />
-                                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={v => `£${v}k`} />
-                                            <Tooltip
-                                                contentStyle={{ backgroundColor: '#112240', borderColor: '#233554', borderRadius: '12px', color: '#fff' }}
-                                                itemStyle={{ color: '#fbbf24' }}
-                                                cursor={{ fill: 'rgba(251, 191, 36, 0.05)' }}
-                                            />
-                                            <Bar dataKey="value" fill="#fbbf24" radius={[6, 6, 0, 0]} barSize={40} />
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            )}
-                        </div>
+                            </div>
 
-                        {/* QUICK STATS SIDEBAR */}
-                        <div className="space-y-6">
-                            <div className="bg-gradient-to-br from-navy-800 to-navy-900 border border-navy-700 rounded-2xl p-6 shadow-xl">
-                                <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                                    <FileText className="w-4 h-4 text-gold-500" />
-                                    Report Selection
-                                </h3>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Company</label>
-                                        <select
-                                            value={selectedTeam}
-                                            onChange={e => setSelectedTeam(Number(e.target.value))}
-                                            className="w-full bg-navy-900 border border-navy-700 text-slate-200 text-sm px-3 py-2.5 rounded-xl focus:ring-2 focus:ring-gold-500/50 transition-all outline-none"
-                                        >
-                                            {teams.map(t => <option key={t.id} value={t.id}>{t.name} (Team {t.companyNumber})</option>)}
-                                        </select>
+                            {/* Charts Section */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div className="bg-navy-800 rounded-3xl border border-navy-700 p-8 shadow-2xl">
+                                    <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-8 flex items-center gap-2">
+                                        <BarChart2 className="w-4 h-4 text-gold-500" /> Capitalization Spread (£'000)
+                                    </h3>
+                                    <div className="h-64">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={companyValueData}>
+                                                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                                                <XAxis dataKey="name" stroke="#64748b" fontSize={10} fontWeight="900" tick={{ fill: '#64748b' }} axisLine={false} tickLine={false} dy={10} />
+                                                <YAxis stroke="#64748b" fontSize={10} fontWeight="900" tick={{ fill: '#64748b' }} axisLine={false} tickLine={false} />
+                                                <Tooltip
+                                                    cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+                                                    contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px' }}
+                                                    itemStyle={{ color: '#fbbf24', fontWeight: '900', fontSize: '10px', textTransform: 'uppercase' }}
+                                                />
+                                                <Bar dataKey="value" fill="#fbbf24" radius={[4, 4, 0, 0]} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
                                     </div>
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Quarterly Period</label>
-                                        <select
-                                            value={selectedQuarter}
-                                            onChange={e => setSelectedQuarter(Number(e.target.value))}
-                                            className="w-full bg-navy-900 border border-navy-700 text-slate-200 text-sm px-3 py-2.5 rounded-xl focus:ring-2 focus:ring-gold-500/50 transition-all outline-none"
-                                        >
-                                            {availableQuarters.map(q => <option key={q} value={q}>Quarter {q}</option>)}
-                                            {availableQuarters.length === 0 && <option value={0}>No Quarters Finished</option>}
-                                        </select>
+                                </div>
+                                <div className="bg-navy-800 rounded-3xl border border-navy-700 p-8 shadow-2xl flex flex-col justify-center items-center text-center space-y-4">
+                                    <div className="w-16 h-16 bg-navy-900 rounded-3xl flex items-center justify-center text-gold-500 border border-navy-700 shadow-inner">
+                                        <Trophy className="w-8 h-8" />
                                     </div>
-                                    <button
-                                        onClick={() => window.print()}
-                                        className="w-full mt-2 bg-navy-700 hover:bg-navy-600 border border-navy-600 text-white font-bold py-3 rounded-xl transition-all active:scale-[0.98] shadow-lg flex items-center justify-center gap-2"
-                                    >
-                                        Export PDF Report
-                                    </button>
+                                    <h3 className="text-xl font-black text-white uppercase italic">Elite Performance Data</h3>
+                                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest max-w-xs transition-colors">
+                                        Market participants are evaluated on net profitability, scaling capacity, and overall entity valuation.
+                                    </p>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            {/* Report Selector Header */}
+                            <div className="bg-navy-800 rounded-2xl border border-navy-700 p-6 shadow-2xl flex flex-wrap gap-6 items-center justify-between">
+                                <div className="flex gap-4 items-center">
+                                    <div className="flex flex-col">
+                                        <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 ml-1">Select Entity</label>
+                                        <select
+                                            value={selectedTeam}
+                                            onChange={(e) => setSelectedTeam(Number(e.target.value))}
+                                            className="bg-navy-900 border border-navy-700 text-white text-xs font-bold px-4 py-2 rounded-xl outline-none focus:ring-2 focus:ring-gold-500/50"
+                                        >
+                                            {teams.map(t => (
+                                                <option key={t.id} value={t.id}>{t.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 ml-1">Select Quarter</label>
+                                        <select
+                                            value={selectedQuarter}
+                                            onChange={(e) => setSelectedQuarter(Number(e.target.value))}
+                                            className="bg-navy-900 border border-navy-700 text-white text-xs font-bold px-4 py-2 rounded-xl outline-none focus:ring-2 focus:ring-gold-500/50"
+                                        >
+                                            {availableQuarters.length > 0 ? (
+                                                availableQuarters.map(q => (
+                                                    <option key={q} value={q}>Quarter {q}</option>
+                                                ))
+                                            ) : (
+                                                <option value={0}>No Data</option>
+                                            )}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => window.print()}
+                                        className="bg-navy-700 hover:bg-navy-600 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-3 border border-navy-600"
+                                    >
+                                        <FileText className="w-4 h-4 text-gold-500" />
+                                        Print Ledger
+                                    </button>
+                                </div>
+                            </div>
 
-                    {/* DETAILED REPORT SECTION */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-3">
-                            <h2 className="text-xl font-bold text-white tracking-tight">Quarterly Ledger Reports</h2>
-                            <div className="h-px flex-1 bg-navy-800"></div>
+                            {/* Detailed Authentic Report Display */}
+                            {renderDetailedReport()}
                         </div>
+                    )}
 
-                        {renderDetailedReport()}
-                    </div>
-
+                    <footer className="pt-12 border-t border-navy-800 text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] text-center">
+                        BHUTTO & CO. SYSTEMS MANAGEMENT PROTOCOL © 2026
+                    </footer>
                 </main>
             </div>
         </div>

@@ -1,8 +1,9 @@
-import Sidebar from '../components/Sidebar';
+import Navbar from '../components/Navbar';
 import { useSimulationStore } from '../store/simulationStore';
-import { Globe, Cpu, TrendingUp, Users, Database, Shield, TrendingDown, PieChart } from 'lucide-react';
+import { Globe, Cpu, TrendingUp, Users, Database, Shield } from 'lucide-react';
 
 const MarketIntelligence = () => {
+    // ... selectors ...
     const teams = useSimulationStore(s => s.teams);
     const currentQuarter = useSimulationStore(s => s.currentQuarter);
     const allResults = useSimulationStore(s => s.allResults);
@@ -17,10 +18,10 @@ const MarketIntelligence = () => {
     };
 
     return (
-        <div className="flex h-screen overflow-hidden bg-navy-900">
-            <Sidebar />
-            <div className="flex-1 flex flex-col overflow-y-auto pt-16 lg:pt-0 lg:pl-72">
-                <main className="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-8">
+        <div className="min-h-screen bg-navy-900 pb-20">
+            <Navbar />
+            <div className="pt-24 px-4 sm:px-6 lg:px-8">
+                <main className="max-w-7xl mx-auto w-full space-y-8">
                     <div className="border-b border-navy-800 pb-8">
                         <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3 italic uppercase">
                             <Globe className="text-gold-500 w-8 h-8" />

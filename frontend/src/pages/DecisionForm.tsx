@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Navbar from '../components/Navbar';
 import { useSimulationStore } from '../store/simulationStore';
 import { TeamDecision } from '../engine/simulationEngine';
 
@@ -73,7 +74,9 @@ const DecisionForm: React.FC<DecisionFormProps> = ({ embedded }) => {
     };
 
     return (
-        <div className={`font-['Arial',sans-serif] text-sm flex flex-col items-center ${embedded ? '' : 'p-8 min-h-screen bg-navy-900 pt-20 lg:pt-8'}`}>
+        <div className={`font-['Arial',sans-serif] text-sm flex flex-col items-center ${embedded ? '' : 'p-8 min-h-screen bg-navy-900 pt-24'}`}>
+
+            {!embedded && <Navbar />}
 
             {!embedded && <h1 className="text-white text-3xl font-black mb-8 self-start max-w-5xl w-full mx-auto uppercase italic tracking-tight">Mission <span className="text-gold-500">Directives</span></h1>}
 
@@ -109,7 +112,7 @@ const DecisionForm: React.FC<DecisionFormProps> = ({ embedded }) => {
                         </div>
                         <fieldset className="win-fieldset bg-black text-center w-1/3 flex flex-col justify-center border-gray-500">
                             <legend className="win-legend text-white bg-black">Information</legend>
-                            <div className="text-[#00ffff] font-bold text-xl leading-tight">Topaz-vbe<br />from Edit<br />Systems Ltd</div>
+                            <div className="text-[#00ffff] font-bold text-xl leading-tight">Simulator<br />from Edit<br />Systems Ltd</div>
                         </fieldset>
                     </div>
 

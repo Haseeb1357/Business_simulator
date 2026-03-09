@@ -1,4 +1,4 @@
-import Sidebar from '../components/Sidebar';
+import Navbar from '../components/Navbar';
 import { useSimulationStore } from '../store/simulationStore';
 import { useMemo } from 'react';
 import { Activity, TrendingUp, AlertCircle, FileText, ChevronRight, CheckCircle } from 'lucide-react';
@@ -29,10 +29,10 @@ const Dashboard = () => {
     };
 
     return (
-        <div className="flex h-screen overflow-hidden bg-navy-900">
-            <Sidebar />
-            <div className="flex-1 flex flex-col overflow-y-auto pt-16 lg:pt-0 lg:pl-72">
-                <main className="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-12">
+        <div className="min-h-screen bg-navy-900 pb-20">
+            <Navbar />
+            <div className="pt-24 px-4 sm:px-6 lg:px-8">
+                <main className="max-w-7xl mx-auto w-full space-y-12">
 
                     {/* Header */}
                     <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6 border-b border-navy-800 pb-8">
