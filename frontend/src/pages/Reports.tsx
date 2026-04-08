@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import Sidebar from '../components/Sidebar';
+// import Sidebar from '../components/Sidebar';
 import { useSimulationStore } from '../store/simulationStore';
 
 const Reports: React.FC = () => {
