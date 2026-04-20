@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-// import Sidebar from '../components/Sidebar';
+import Sidebar from '../components/Sidebar';
 import { useSimulationStore } from '../store/simulationStore';
 import { ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 import {
