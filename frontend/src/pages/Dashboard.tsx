@@ -184,7 +184,7 @@ const Dashboard = () => {
                     </section>
 
                     <footer className="pt-12 border-t border-navy-800 text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] text-center pb-20">
-                        TOPAZ-Vbe Systems Management Protocol © 2026
+                        Simulator Systems Management Protocol © 2026
                     </footer>
 
                 </main>

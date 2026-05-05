@@ -12,7 +12,6 @@ const Intelligence: React.FC = () => {
     const activeTeamId = useSimulationStore(s => s.activeTeamId);
     const currentQuarter = useSimulationStore(s => s.currentQuarter);
     const allResults = useSimulationStore(s => s.allResults);
-    const gameConfig = useSimulationStore(s => s.gameConfig);
     const getTeamLatestResult = useSimulationStore(s => s.getTeamLatestResult);
 
     const latestQ = Math.max(0, currentQuarter - 1);

@@ -9,7 +9,7 @@ import clsx from 'clsx';
 
 const Navbar = () => {
     const [mobileOpen, setMobileOpen] = useState(false);
-    const { currentQuarter, activeTeamId, teams, gameStatus } = useSimulationStore();
+    const { currentQuarter, activeTeamId, teams, gameStatus, isSynced, isOnline } = useSimulationStore();
     const activeTeam = teams.find(t => t.id === activeTeamId);
 
     const navItems = [
@@ -61,6 +61,16 @@ const Navbar = () => {
                             <div className="h-8 w-px bg-navy-800" />
                             <div className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-tight border ${gameStatus === 'inputting' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'}`}>
                                 {gameStatus}
+                            </div>
+                            <div className="h-8 w-px bg-navy-800" />
+                            <div className="flex items-center gap-1.5" title={isSynced ? 'Live — synced across all devices' : isOnline ? 'Connecting to cloud...' : 'Offline'}>
+                                <div className="relative flex h-2.5 w-2.5">
+                                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isSynced ? 'bg-emerald-400' : 'bg-amber-400'}`}></span>
+                                    <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isSynced ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
+                                </div>
+                                <span className={`text-[9px] font-black uppercase tracking-widest ${isSynced ? 'text-emerald-500' : 'text-amber-500'}`}>
+                                    {isSynced ? 'Live' : 'Sync...'}
+                                </span>
                             </div>
                         </div>
 
