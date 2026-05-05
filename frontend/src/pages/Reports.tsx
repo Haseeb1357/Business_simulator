@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import Sidebar from '../components/Sidebar';
+import Navbar from '../components/Navbar';
 import { useSimulationStore } from '../store/simulationStore';
 
 const Reports: React.FC = () => {
@@ -37,7 +37,7 @@ const Reports: React.FC = () => {
     if (!result || !d || !prev || !cf || !pnl || !bs) {
         return (
             <div className="flex h-screen overflow-hidden">
-                <Sidebar />
+                <Navbar />
                 <div className="flex-1 flex flex-col p-8 pt-20 lg:pt-8 bg-white lg:pl-72 items-center justify-center">
                     <h2 className="text-xl font-bold mb-4">No report initialized.</h2>
                     <p className="mb-4">Simulation must advance past Quarter 1 to generate reports.</p>
@@ -54,8 +54,8 @@ const Reports: React.FC = () => {
 
     return (
         <div className="flex h-screen overflow-hidden">
-            <Sidebar />
-            <div className="flex-1 flex flex-col bg-slate-200 lg:pl-64 overflow-y-auto w-full">
+            <Navbar />
+            <div className="flex-1 flex flex-col bg-slate-200 pt-20 overflow-y-auto w-full">
 
                 {/* Control Bar */}
                 <div className="bg-white border-b border-slate-300 p-4 sticky top-0 z-10 flex flex-wrap gap-4 items-center shadow-sm print:hidden">
@@ -439,7 +439,7 @@ const Reports: React.FC = () => {
 
                         {/* Footer */}
                         <div className="mt-4 text-center text-[10px] text-gray-500 pb-12">
-                            <p>© TOPAZ-Vbe is an interactive Business Simulation developed by Edit Systems Ltd.</p>
+                            <p>© Simulator is an interactive Business Simulation developed by Edit Systems Ltd.</p>
                             <p>This replica module rendered for diagnostic/historical replication purposes.</p>
                         </div>
 

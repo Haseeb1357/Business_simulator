@@ -4,6 +4,13 @@ import {
     getDefaultDecision, randomizeDecision, getInitialCarryForward,
     processQuarterSimulation,
 } from '../engine/simulationEngine';
+import {
+    serializeState,
+    saveStateToFirestore,
+    subscribeToFirestore,
+    loadInitialState,
+    DeserializedState,
+} from './firestoreSync';
 
 // ---- Team Info ----
 export interface TeamInfo {
@@ -22,6 +29,10 @@ interface SimulationState {
     activeTeamId: number;
     gameConfig: GameConfig;
     totalQuarters: number;
+
+    // Sync state
+    isSynced: boolean;      // true once first Firestore data is received
+    isOnline: boolean;      // true once listener is attached
 
     // Decisions: teamId -> decision for current quarter
     currentDecisions: Map<number, TeamDecision>;
@@ -48,9 +59,8 @@ interface SimulationState {
     removeTeam: (teamId: number) => void;
     addNewsItem: (newsText: string) => void;
 
-    // ----------------------------------------------------
-    // Admin Overrides
-    // ----------------------------------------------------
+    // Internal: apply remote state from Firestore (no re-save)
+    _applyRemoteState: (remote: DeserializedState) => void;
 
     // Helpers
     getTeamResult: (teamId: number, quarter: number) => TeamQuarterResult | undefined;
@@ -94,189 +104,269 @@ function initCarryForwards(teams: TeamInfo[]): Map<number, TeamCarryForward> {
     return map;
 }
 
+// ---- Firestore write helper ----
+// We track the last timestamp we wrote so the echo from the snapshot
+// listener doesn't trigger another write.
+let _lastWrittenAt = 0;
+
+function persistState(state: Omit<SimulationState, 
+    | 'setActiveTeam' | 'updateDecision' | 'randomizeCurrentDecision'
+    | 'submitDecision' | 'processQuarter' | 'resetGame' | 'updateGameConfig'
+    | 'addTeam' | 'removeTeam' | 'addNewsItem' | '_applyRemoteState'
+    | 'getTeamResult' | 'getTeamLatestResult' | 'getAllTeamLatestResults'
+    | 'getTeamResultHistory' | 'isSynced' | 'isOnline'
+>) {
+    const serialized = serializeState(state);
+    _lastWrittenAt = serialized.updatedAt;
+    saveStateToFirestore(serialized);
+}
+
 // ---- Store ----
-export const useSimulationStore = create<SimulationState>((set, get) => ({
-    currentQuarter: 1,
-    gameStatus: 'inputting',
-    teams: DEFAULT_TEAMS,
-    activeTeamId: 1,
-    gameConfig: DEFAULT_CONFIG,
-    totalQuarters: 12,
-    currentDecisions: initDecisions(DEFAULT_TEAMS),
-    submittedTeams: new Set<number>(),
-    allResults: new Map<number, TeamQuarterResult[]>(),
-    carryForwards: initCarryForwards(DEFAULT_TEAMS),
-    processingLog: [],
+export const useSimulationStore = create<SimulationState>((set, get) => {
 
-    setActiveTeam: (teamId) => set({ activeTeamId: teamId }),
+    // ── Bootstrap: load from Firestore, then subscribe ──────────────────────
+    // We do this immediately when the store is created.
+    (async () => {
+        // 1. Try to load existing state (avoids a flash of default state)
+        const initial = await loadInitialState();
+        if (initial) {
+            set({
+                ...initial,
+                isSynced: true,
+            });
+        }
 
-    updateDecision: (teamId, decision) => {
-        const map = new Map(get().currentDecisions);
-        map.set(teamId, decision);
-        set({ currentDecisions: map });
-    },
-
-    randomizeCurrentDecision: () => {
-        const { activeTeamId, currentDecisions } = get();
-        const map = new Map(currentDecisions);
-        map.set(activeTeamId, randomizeDecision());
-        set({ currentDecisions: map });
-    },
-
-    submitDecision: (teamId) => {
-        const submitted = new Set(get().submittedTeams);
-        submitted.add(teamId);
-        set({ submittedTeams: submitted });
-    },
-
-    processQuarter: () => {
-        const state = get();
-        const log: string[] = [];
-
-        set({ gameStatus: 'processing', processingLog: [] });
-
-        log.push(`> Locking decisions for Quarter ${state.currentQuarter}...`);
-        set({ processingLog: [...log] });
-
-        // Auto-submit any teams that haven't submitted (use defaults)
-        const decisions = new Map(state.currentDecisions);
-        for (const team of state.teams) {
-            if (!decisions.has(team.id)) {
-                decisions.set(team.id, getDefaultDecision());
+        // 2. Subscribe to live updates
+        subscribeToFirestore((remote, updatedAt) => {
+            // Ignore echoes of our own writes (within 2s window)
+            if (updatedAt <= _lastWrittenAt + 2000 && updatedAt >= _lastWrittenAt - 100) {
+                return;
             }
-        }
-
-        log.push(`> ${state.teams.length} teams locked. Running simulation...`);
-        log.push(`> Calculating demand across ${state.teams.length} companies...`);
-        set({ processingLog: [...log] });
-
-        // Run simulation
-        const { results, newCarryForwards } = processQuarterSimulation(
-            decisions,
-            state.carryForwards,
-            state.teams.map(t => t.id),
-            state.currentQuarter,
-            state.gameConfig
-        );
-
-        // Store results - create new arrays to trigger Zustand re-render
-        const allRes = new Map(state.allResults);
-        for (const [tid, result] of results) {
-            const existing = allRes.get(tid) || [];
-            allRes.set(tid, [...existing, result]);
-        }
-
-        log.push(`> Generating P&L and Balance Sheet ledgers...`);
-
-        for (const [tid, result] of results) {
-            const team = state.teams.find(t => t.id === tid);
-            log.push(`> ${team?.name}: Revenue $${result.profitAndLoss.salesRevenue.toLocaleString()}, Net Profit $${result.kpis.netProfit.toLocaleString()}`);
-        }
-
-        log.push(`> Quarter ${state.currentQuarter} processing COMPLETE.`);
-        log.push(`> Results written. Quarter advanced to Q${state.currentQuarter + 1}.`);
-
-        set({
-            allResults: allRes,
-            carryForwards: newCarryForwards,
-            currentQuarter: state.currentQuarter + 1,
-            gameStatus: 'inputting',
-            submittedTeams: new Set<number>(),
-            currentDecisions: initDecisions(state.teams),
-            processingLog: log,
+            get()._applyRemoteState(remote);
         });
-    },
 
-    resetGame: () => {
-        const teams = get().teams;
-        set({
-            currentQuarter: 1,
-            gameStatus: 'inputting',
-            currentDecisions: initDecisions(teams),
-            submittedTeams: new Set<number>(),
-            allResults: new Map<number, TeamQuarterResult[]>(),
-            carryForwards: initCarryForwards(teams),
-            processingLog: [],
-        });
-    },
+        set({ isOnline: true });
+    })();
 
-    updateGameConfig: (config) => {
-        set({ gameConfig: { ...get().gameConfig, ...config } });
-    },
+    return {
+        currentQuarter: 1,
+        gameStatus: 'inputting',
+        teams: DEFAULT_TEAMS,
+        activeTeamId: 1,
+        gameConfig: DEFAULT_CONFIG,
+        totalQuarters: 12,
+        currentDecisions: initDecisions(DEFAULT_TEAMS),
+        submittedTeams: new Set<number>(),
+        allResults: new Map<number, TeamQuarterResult[]>(),
+        carryForwards: initCarryForwards(DEFAULT_TEAMS),
+        processingLog: [],
+        isSynced: false,
+        isOnline: false,
 
-    addTeam: (name) => {
-        const { teams, currentDecisions, carryForwards } = get();
-        const newId = teams.length > 0 ? Math.max(...teams.map(t => t.id)) + 1 : 1;
-        const compNum = teams.length > 0 ? Math.max(...teams.map(t => t.companyNumber)) + 1 : 1;
+        // ── Internal: apply state received from Firestore ─────────────────
+        _applyRemoteState: (remote) => {
+            set({
+                ...remote,
+                isSynced: true,
+            });
+        },
 
-        const newTeam: TeamInfo = { id: newId, name, companyNumber: compNum };
+        // ── Actions (each one persists to Firestore after local update) ───
 
-        const newDecisions = new Map(currentDecisions);
-        newDecisions.set(newId, getDefaultDecision());
+        setActiveTeam: (teamId) => set({ activeTeamId: teamId }),
+        // Note: setActiveTeam is purely local UI; we don't sync it.
 
-        const newCarryForwards = new Map(carryForwards);
-        newCarryForwards.set(newId, getInitialCarryForward());
+        updateDecision: (teamId, decision) => {
+            const map = new Map(get().currentDecisions);
+            map.set(teamId, decision);
+            const next = { currentDecisions: map };
+            set(next);
+            persistState({ ...get(), ...next });
+        },
 
-        set({
-            teams: [...teams, newTeam],
-            currentDecisions: newDecisions,
-            carryForwards: newCarryForwards
-        });
-    },
+        randomizeCurrentDecision: () => {
+            const { activeTeamId, currentDecisions } = get();
+            const map = new Map(currentDecisions);
+            map.set(activeTeamId, randomizeDecision());
+            const next = { currentDecisions: map };
+            set(next);
+            persistState({ ...get(), ...next });
+        },
 
-    removeTeam: (teamId) => {
-        const { teams, currentDecisions, carryForwards, allResults } = get();
+        submitDecision: (teamId) => {
+            const submitted = new Set(get().submittedTeams);
+            submitted.add(teamId);
+            const next = { submittedTeams: submitted };
+            set(next);
+            persistState({ ...get(), ...next });
+        },
 
-        const newDecisions = new Map(currentDecisions);
-        newDecisions.delete(teamId);
+        processQuarter: () => {
+            const state = get();
+            const log: string[] = [];
 
-        const newCarryForwards = new Map(carryForwards);
-        newCarryForwards.delete(teamId);
+            set({ gameStatus: 'processing', processingLog: [] });
 
-        const newAllResults = new Map(allResults);
-        newAllResults.delete(teamId);
+            log.push(`> Locking decisions for Quarter ${state.currentQuarter}...`);
+            set({ processingLog: [...log] });
 
-        set({
-            teams: teams.filter(t => t.id !== teamId),
-            currentDecisions: newDecisions,
-            carryForwards: newCarryForwards,
-            allResults: newAllResults,
-            activeTeamId: get().activeTeamId === teamId && teams.length > 1 ? teams.find(t => t.id !== teamId)!.id : get().activeTeamId
-        });
-    },
-
-    addNewsItem: (newsText) => {
-        const { gameConfig, currentQuarter } = get();
-        const fullNewsElement = `[Q${currentQuarter}] ${newsText}`;
-        set({
-            gameConfig: {
-                ...gameConfig,
-                news: [...(gameConfig.news || []), fullNewsElement]
+            // Auto-submit any teams that haven't submitted (use defaults)
+            const decisions = new Map(state.currentDecisions);
+            for (const team of state.teams) {
+                if (!decisions.has(team.id)) {
+                    decisions.set(team.id, getDefaultDecision());
+                }
             }
-        });
-    },
 
-    getTeamResult: (teamId, quarter) => {
-        const results = get().allResults.get(teamId);
-        return results?.find(r => r.quarter === quarter);
-    },
+            log.push(`> ${state.teams.length} teams locked. Running simulation...`);
+            log.push(`> Calculating demand across ${state.teams.length} companies...`);
+            set({ processingLog: [...log] });
 
-    getTeamLatestResult: (teamId) => {
-        const results = get().allResults.get(teamId);
-        return results?.[results.length - 1];
-    },
+            // Run simulation
+            const { results, newCarryForwards } = processQuarterSimulation(
+                decisions,
+                state.carryForwards,
+                state.teams.map(t => t.id),
+                state.currentQuarter,
+                state.gameConfig
+            );
 
-    getAllTeamLatestResults: () => {
-        const { allResults, teams, currentQuarter } = get();
-        const latestQ = currentQuarter - 1;
-        if (latestQ < 1) return [];
-        return teams.map(t => {
-            const res = allResults.get(t.id);
-            return res?.find(r => r.quarter === latestQ);
-        }).filter(Boolean) as TeamQuarterResult[];
-    },
+            // Store results
+            const allRes = new Map(state.allResults);
+            for (const [tid, result] of results) {
+                const existing = allRes.get(tid) || [];
+                allRes.set(tid, [...existing, result]);
+            }
 
-    getTeamResultHistory: (teamId) => {
-        return get().allResults.get(teamId) || [];
-    },
-}));
+            log.push(`> Generating P&L and Balance Sheet ledgers...`);
+
+            for (const [tid, result] of results) {
+                const team = state.teams.find(t => t.id === tid);
+                log.push(`> ${team?.name}: Revenue $${result.profitAndLoss.salesRevenue.toLocaleString()}, Net Profit $${result.kpis.netProfit.toLocaleString()}`);
+            }
+
+            log.push(`> Quarter ${state.currentQuarter} processing COMPLETE.`);
+            log.push(`> Results written. Quarter advanced to Q${state.currentQuarter + 1}.`);
+
+            const nextState = {
+                allResults: allRes,
+                carryForwards: newCarryForwards,
+                currentQuarter: state.currentQuarter + 1,
+                gameStatus: 'inputting' as const,
+                submittedTeams: new Set<number>(),
+                currentDecisions: initDecisions(state.teams),
+                processingLog: log,
+            };
+
+            set(nextState);
+            persistState({ ...get(), ...nextState });
+        },
+
+        resetGame: () => {
+            const teams = get().teams;
+            const nextState = {
+                currentQuarter: 1,
+                gameStatus: 'inputting' as const,
+                currentDecisions: initDecisions(teams),
+                submittedTeams: new Set<number>(),
+                allResults: new Map<number, TeamQuarterResult[]>(),
+                carryForwards: initCarryForwards(teams),
+                processingLog: [],
+            };
+            set(nextState);
+            persistState({ ...get(), ...nextState });
+        },
+
+        updateGameConfig: (config) => {
+            const next = { gameConfig: { ...get().gameConfig, ...config } };
+            set(next);
+            persistState({ ...get(), ...next });
+        },
+
+        addTeam: (name) => {
+            const { teams, currentDecisions, carryForwards } = get();
+            const newId = teams.length > 0 ? Math.max(...teams.map(t => t.id)) + 1 : 1;
+            const compNum = teams.length > 0 ? Math.max(...teams.map(t => t.companyNumber)) + 1 : 1;
+
+            const newTeam: TeamInfo = { id: newId, name, companyNumber: compNum };
+
+            const newDecisions = new Map(currentDecisions);
+            newDecisions.set(newId, getDefaultDecision());
+
+            const newCarryForwards = new Map(carryForwards);
+            newCarryForwards.set(newId, getInitialCarryForward());
+
+            const next = {
+                teams: [...teams, newTeam],
+                currentDecisions: newDecisions,
+                carryForwards: newCarryForwards,
+            };
+            set(next);
+            persistState({ ...get(), ...next });
+        },
+
+        removeTeam: (teamId) => {
+            const { teams, currentDecisions, carryForwards, allResults } = get();
+
+            const newDecisions = new Map(currentDecisions);
+            newDecisions.delete(teamId);
+
+            const newCarryForwards = new Map(carryForwards);
+            newCarryForwards.delete(teamId);
+
+            const newAllResults = new Map(allResults);
+            newAllResults.delete(teamId);
+
+            const next = {
+                teams: teams.filter(t => t.id !== teamId),
+                currentDecisions: newDecisions,
+                carryForwards: newCarryForwards,
+                allResults: newAllResults,
+                activeTeamId: get().activeTeamId === teamId && teams.length > 1
+                    ? teams.find(t => t.id !== teamId)!.id
+                    : get().activeTeamId,
+            };
+            set(next);
+            persistState({ ...get(), ...next });
+        },
+
+        addNewsItem: (newsText) => {
+            const { gameConfig, currentQuarter } = get();
+            const fullNewsElement = `[Q${currentQuarter}] ${newsText}`;
+            const next = {
+                gameConfig: {
+                    ...gameConfig,
+                    news: [...(gameConfig.news || []), fullNewsElement],
+                },
+            };
+            set(next);
+            persistState({ ...get(), ...next });
+        },
+
+        // ── Helpers ──────────────────────────────────────────────────────────
+
+        getTeamResult: (teamId, quarter) => {
+            const results = get().allResults.get(teamId);
+            return results?.find(r => r.quarter === quarter);
+        },
+
+        getTeamLatestResult: (teamId) => {
+            const results = get().allResults.get(teamId);
+            return results?.[results.length - 1];
+        },
+
+        getAllTeamLatestResults: () => {
+            const { allResults, teams, currentQuarter } = get();
+            const latestQ = currentQuarter - 1;
+            if (latestQ < 1) return [];
+            return teams.map(t => {
+                const res = allResults.get(t.id);
+                return res?.find(r => r.quarter === latestQ);
+            }).filter(Boolean) as TeamQuarterResult[];
+        },
+
+        getTeamResultHistory: (teamId) => {
+            return get().allResults.get(teamId) || [];
+        },
+    };
+});

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import Sidebar from '../components/Sidebar';
+import Navbar from '../components/Navbar';
 import { useSimulationStore } from '../store/simulationStore';
 import { ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 import {
@@ -48,8 +48,8 @@ const Leaderboard = () => {
 
     return (
         <div className="flex h-screen overflow-hidden">
-            <Sidebar />
-            <div className="flex-1 flex flex-col overflow-y-auto pt-16 lg:pt-0 lg:pl-72 bg-slate-50">
+            <Navbar />
+            <div className="flex-1 flex flex-col overflow-y-auto pt-20 bg-slate-50">
                 <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
                     <div className="flex justify-between items-center mb-6">
                         <div>
